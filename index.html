@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>冈仁波齐 · 能量中转站</title>
+    <title>能量中转站 | maxgzh.xyz</title>
+    <link rel="icon" href="https://fav.farm/⚡" />
     <meta
       name="description"
       content="基于线下信任节点的可复制商业模型，服务转山人群的能量中转站。"
@@ -26,22 +27,17 @@
         --soft-line: rgba(31, 26, 20, 0.08);
       }
 
-      * {
-        box-sizing: border-box;
-      }
-
-      html {
-        scroll-behavior: smooth;
-      }
-
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
       body {
         margin: 0;
-        font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+        font-family: "Noto Sans SC", sans-serif;
         color: var(--ink);
         background: var(--sand);
         line-height: 1.7;
+        text-shadow: 0 0 1px rgba(0,0,0,0.05); /* 轻微文字阴影，提升质感 */
       }
-
+      /* ... (保留你原来的CSS背景和布局) ... */
       body::before {
         content: "";
         position: fixed;
@@ -52,436 +48,72 @@
           linear-gradient(160deg, #f6efe2 10%, #efe1cb 45%, #f4ecdf 100%);
         z-index: -2;
       }
-
       body::after {
         content: "";
         position: fixed;
         inset: 0;
-        background-image: repeating-linear-gradient(
-            100deg,
-            rgba(31, 26, 20, 0.04),
-            rgba(31, 26, 20, 0.04) 1px,
-            transparent 1px,
-            transparent 12px
-          ),
-          repeating-linear-gradient(
-            10deg,
-            rgba(31, 26, 20, 0.03),
-            rgba(31, 26, 20, 0.03) 1px,
-            transparent 1px,
-            transparent 10px
-          );
+        background-image: repeating-linear-gradient(100deg, rgba(31, 26, 20, 0.04), rgba(31, 26, 20, 0.04) 1px, transparent 1px, transparent 12px),
+          repeating-linear-gradient(10deg, rgba(31, 26, 20, 0.03), rgba(31, 26, 20, 0.03) 1px, transparent 1px, transparent 10px);
         opacity: 0.55;
         z-index: -1;
         pointer-events: none;
       }
-
-      .wrap {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 6vw 120px;
-      }
-
-      .hero {
-        min-height: 90vh;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 48px;
-        align-items: center;
-        padding: 80px 0 40px;
-        position: relative;
-      }
-
-      .hero::before {
-        content: "";
-        position: absolute;
-        right: 6%;
-        top: 12%;
-        width: 420px;
-        height: 420px;
-        border-radius: 50%;
-        background: radial-gradient(circle at 30% 30%, rgba(227, 163, 90, 0.35), transparent 60%),
-          radial-gradient(circle at 70% 70%, rgba(63, 111, 107, 0.25), transparent 65%);
-        filter: blur(2px);
-        z-index: 0;
-      }
-
-      .hero-content,
-      .hero-visual {
-        position: relative;
-        z-index: 1;
-      }
-
-      .eyebrow {
-        text-transform: uppercase;
-        letter-spacing: 0.28em;
-        font-size: 0.75rem;
-        color: var(--sky);
-        margin-bottom: 12px;
-      }
-
-      h1,
-      h2,
-      h3 {
-        font-family: "Noto Serif SC", "STSong", serif;
-        margin: 0;
-        color: var(--coal);
-      }
-
-      h1 {
-        font-size: clamp(2.6rem, 5vw, 4.2rem);
-        line-height: 1.12;
-      }
-
-      .lead {
-        font-size: 1.1rem;
-        margin: 18px 0 28px;
-        max-width: 520px;
-      }
-
-      .badge {
-        display: inline-flex;
-        gap: 8px;
-        align-items: center;
-        padding: 6px 14px;
-        border-radius: 999px;
-        border: 1px solid var(--soft-line);
-        background: rgba(255, 255, 255, 0.6);
-        font-size: 0.85rem;
-        margin-bottom: 16px;
-      }
-
-      .cta-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-      }
-
-      .btn {
-        padding: 12px 22px;
-        border-radius: 999px;
-        text-decoration: none;
-        font-weight: 600;
-        border: 1px solid transparent;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-      }
-
-      .btn.primary {
-        background: var(--coal);
-        color: #fff;
-        box-shadow: 0 18px 30px rgba(31, 26, 20, 0.2);
-      }
-
-      .btn.ghost {
-        border-color: var(--coal);
-        color: var(--coal);
-        background: transparent;
-      }
-
-      .btn:hover {
-        transform: translateY(-2px);
-      }
-
-      .hero-metrics {
-        margin-top: 36px;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 16px;
-      }
-
-      .metric {
-        padding: 16px 18px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.66);
-        border: 1px solid var(--soft-line);
-      }
-
-      .metric span {
-        font-size: 1.6rem;
-        font-weight: 600;
-        color: var(--coal);
-        display: block;
-      }
-
-      .hero-visual {
-        display: grid;
-        gap: 18px;
-        padding: 32px;
-        border-radius: 24px;
-        background: rgba(255, 255, 255, 0.6);
-        border: 1px solid var(--soft-line);
-        position: relative;
-      }
-
-      .hero-visual::before {
-        content: "";
-        position: absolute;
-        inset: 18px;
-        border: 1px dashed var(--line);
-        border-radius: 20px;
-      }
-
-      .node {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 0.95rem;
-      }
-
-      .node-dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: var(--clay);
-        box-shadow: 0 0 0 6px rgba(192, 116, 58, 0.15);
-        animation: pulse 6s ease-in-out infinite;
-      }
-
-      .node:nth-child(2) .node-dot {
-        background: var(--sky);
-        box-shadow: 0 0 0 6px rgba(63, 111, 107, 0.18);
-        animation-delay: 1.2s;
-      }
-
-      .node:nth-child(3) .node-dot {
-        background: var(--ember);
-        box-shadow: 0 0 0 6px rgba(227, 163, 90, 0.2);
-        animation-delay: 2.4s;
-      }
-
-      section {
-        padding: 80px 0 0;
-      }
-
-      .section-title {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 26px;
-      }
-
-      .section-title::before {
-        content: "";
-        width: 36px;
-        height: 2px;
-        background: var(--clay);
-      }
-
-      .grid {
-        display: grid;
-        gap: 18px;
-      }
-
-      .grid.cols-3 {
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      }
-
-      .grid.cols-2 {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      }
-
-      .card {
-        padding: 22px 24px;
-        border-radius: 20px;
-        background: rgba(255, 255, 255, 0.72);
-        border: 1px solid var(--soft-line);
-        box-shadow: 0 12px 30px rgba(31, 26, 20, 0.08);
-      }
-
-      .card h3 {
-        margin-bottom: 10px;
-        font-size: 1.2rem;
-      }
-
-      .tag-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 16px;
-      }
-
-      .tag {
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: rgba(227, 163, 90, 0.16);
-        border: 1px solid rgba(227, 163, 90, 0.35);
-        font-size: 0.85rem;
-      }
-
-      .quote {
-        font-family: "Noto Serif SC", serif;
-        font-size: clamp(1.3rem, 2.6vw, 2rem);
-        padding: 28px;
-        border-left: 4px solid var(--clay);
-        background: rgba(255, 255, 255, 0.5);
-        border-radius: 18px;
-      }
-
-      .zones {
-        display: grid;
-        gap: 18px;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      }
-
-      .zone {
-        padding: 18px;
-        border-radius: 16px;
-        border: 1px solid var(--soft-line);
-        background: rgba(255, 255, 255, 0.68);
-      }
-
-      .zone strong {
-        display: block;
-        margin-bottom: 6px;
-      }
-
-      .timeline {
-        display: grid;
-        gap: 18px;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      }
-
-      .timeline-item {
-        padding: 20px;
-        border-radius: 18px;
-        background: rgba(255, 255, 255, 0.7);
-        border: 1px solid var(--soft-line);
-      }
-
-      .timeline-item span {
-        display: inline-block;
-        padding: 4px 10px;
-        border-radius: 999px;
-        background: rgba(63, 111, 107, 0.15);
-        margin-bottom: 10px;
-        font-size: 0.85rem;
-      }
-
-      .kpi-strip {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 12px;
-        margin-top: 18px;
-      }
-
-      .kpi {
-        padding: 14px 16px;
-        border-radius: 14px;
-        background: rgba(227, 163, 90, 0.12);
-        border: 1px solid rgba(227, 163, 90, 0.3);
-        font-weight: 600;
-      }
-
-      .barlist {
-        display: grid;
-        gap: 12px;
-      }
-
-      .bar {
-        display: grid;
-        grid-template-columns: 120px 1fr;
-        gap: 12px;
-        align-items: center;
-      }
-
-      .bar span {
-        font-size: 0.9rem;
-      }
-
-      .bar-track {
-        height: 10px;
-        border-radius: 999px;
-        background: rgba(31, 26, 20, 0.08);
-        overflow: hidden;
-      }
-
-      .bar-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--clay), var(--ember));
-      }
-
-      .risk-grid {
-        display: grid;
-        gap: 12px;
-      }
-
-      .risk-row {
-        padding: 14px 16px;
-        border-radius: 14px;
-        border: 1px solid var(--soft-line);
-        background: rgba(255, 255, 255, 0.7);
-        display: grid;
-        grid-template-columns: 140px 1fr 1fr;
-        gap: 12px;
-      }
-
-      .risk-row strong {
-        color: var(--coal);
-      }
-
-      .cta {
-        margin-top: 90px;
-        padding: 40px;
-        border-radius: 28px;
-        background: linear-gradient(130deg, rgba(63, 111, 107, 0.18), rgba(227, 163, 90, 0.25));
-        border: 1px solid var(--soft-line);
-        display: grid;
-        gap: 18px;
-      }
-
-      footer {
-        margin-top: 60px;
-        color: rgba(31, 26, 20, 0.6);
-        font-size: 0.9rem;
-      }
-
-      [data-reveal] {
-        opacity: 0;
-        transform: translateY(18px);
-        transition: opacity 0.7s ease, transform 0.7s ease;
-        transition-delay: var(--d, 0ms);
-      }
-
-      [data-reveal].in {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.2);
-        }
-      }
-
-      @media (max-width: 800px) {
-        .hero {
-          padding-top: 60px;
-        }
-
-        .hero::before {
-          width: 260px;
-          height: 260px;
-        }
-
-        .risk-row {
-          grid-template-columns: 1fr;
-        }
-
-        .bar {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        * {
-          animation: none !important;
-          transition: none !important;
-        }
-      }
+      .wrap { max-width: 1200px; margin: 0 auto; padding: 0 6vw 120px; }
+      .hero { min-height: 90vh; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 48px; align-items: center; padding: 80px 0 40px; position: relative; }
+      .hero::before { content: ""; position: absolute; right: 6%; top: 12%; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, rgba(227, 163, 90, 0.35), transparent 60%), radial-gradient(circle at 70% 70%, rgba(63, 111, 107, 0.25), transparent 65%); filter: blur(2px); z-index: 0; }
+      .hero-content, .hero-visual { position: relative; z-index: 1; }
+      .eyebrow { text-transform: uppercase; letter-spacing: 0.28em; font-size: 0.75rem; color: var(--sky); margin-bottom: 12px; }
+      h1, h2, h3 { font-family: "Noto Serif SC", serif; margin: 0; color: var(--coal); }
+      h1 { font-size: clamp(2.6rem, 5vw, 4.2rem); line-height: 1.12; }
+      .lead { font-size: 1.1rem; margin: 18px 0 28px; max-width: 520px; }
+      .badge { display: inline-flex; gap: 8px; align-items: center; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--soft-line); background: rgba(255, 255, 255, 0.6); font-size: 0.85rem; margin-bottom: 16px; }
+      .cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+      .btn { padding: 12px 22px; border-radius: 999px; text-decoration: none; font-weight: 600; border: 1px solid transparent; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+      .btn.primary { background: var(--coal); color: #fff; box-shadow: 0 18px 30px rgba(31, 26, 20, 0.2); }
+      .btn.ghost { border-color: var(--coal); color: var(--coal); background: transparent; }
+      .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+      .hero-metrics { margin-top: 36px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+      .metric { padding: 16px 18px; border-radius: 16px; background: rgba(255, 255, 255, 0.66); border: 1px solid var(--soft-line); }
+      .metric span { font-size: 1.6rem; font-weight: 600; color: var(--coal); display: block; }
+      .hero-visual { display: grid; gap: 18px; padding: 32px; border-radius: 24px; background: rgba(255, 255, 255, 0.6); border: 1px solid var(--soft-line); position: relative; }
+      .hero-visual::before { content: ""; position: absolute; inset: 18px; border: 1px dashed var(--line); border-radius: 20px; }
+      .node { display: flex; align-items: center; gap: 12px; font-size: 0.95rem; }
+      .node-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--clay); box-shadow: 0 0 0 6px rgba(192, 116, 58, 0.15); animation: pulse 6s ease-in-out infinite; }
+      .node:nth-child(2) .node-dot { background: var(--sky); box-shadow: 0 0 0 6px rgba(63, 111, 107, 0.18); animation-delay: 1.2s; }
+      .node:nth-child(3) .node-dot { background: var(--ember); box-shadow: 0 0 0 6px rgba(227, 163, 90, 0.2); animation-delay: 2.4s; }
+      section { padding: 80px 0 0; }
+      .section-title { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+      .section-title::before { content: ""; width: 36px; height: 2px; background: var(--clay); }
+      .grid { display: grid; gap: 18px; }
+      .grid.cols-3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+      .grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+      .card { padding: 22px 24px; border-radius: 20px; background: rgba(255, 255, 255, 0.72); border: 1px solid var(--soft-line); box-shadow: 0 12px 30px rgba(31, 26, 20, 0.08); }
+      .card h3 { margin-bottom: 10px; font-size: 1.2rem; }
+      .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .tag { padding: 6px 12px; border-radius: 999px; background: rgba(227, 163, 90, 0.16); border: 1px solid rgba(227, 163, 90, 0.35); font-size: 0.85rem; }
+      .quote { font-family: "Noto Serif SC", serif; font-size: clamp(1.3rem, 2.6vw, 2rem); padding: 28px; border-left: 4px solid var(--clay); background: rgba(255, 255, 255, 0.5); border-radius: 18px; }
+      .zones { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+      .zone { padding: 18px; border-radius: 16px; border: 1px solid var(--soft-line); background: rgba(255, 255, 255, 0.68); }
+      .zone strong { display: block; margin-bottom: 6px; }
+      .timeline { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+      .timeline-item { padding: 20px; border-radius: 18px; background: rgba(255, 255, 255, 0.7); border: 1px solid var(--soft-line); }
+      .timeline-item span { display: inline-block; padding: 4px 10px; border-radius: 999px; background: rgba(63, 111, 107, 0.15); margin-bottom: 10px; font-size: 0.85rem; }
+      .kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 18px; }
+      .kpi { padding: 14px 16px; border-radius: 14px; background: rgba(227, 163, 90, 0.12); border: 1px solid rgba(227, 163, 90, 0.3); font-weight: 600; }
+      .barlist { display: grid; gap: 12px; }
+      .bar { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center; }
+      .bar span { font-size: 0.9rem; }
+      .bar-track { height: 10px; border-radius: 999px; background: rgba(31, 26, 20, 0.08); overflow: hidden; }
+      .bar-fill { height: 100%; background: linear-gradient(90deg, var(--clay), var(--ember)); }
+      .risk-grid { display: grid; gap: 12px; }
+      .risk-row { padding: 14px 16px; border-radius: 14px; border: 1px solid var(--soft-line); background: rgba(255, 255, 255, 0.7); display: grid; grid-template-columns: 140px 1fr 1fr; gap: 12px; }
+      .risk-row strong { color: var(--coal); }
+      .cta { margin-top: 90px; padding: 40px; border-radius: 28px; background: linear-gradient(130deg, rgba(63, 111, 107, 0.18), rgba(227, 163, 90, 0.25)); border: 1px solid var(--soft-line); display: grid; gap: 18px; }
+      footer { margin-top: 60px; color: rgba(31, 26, 20, 0.6); font-size: 0.9rem; }
+      [data-reveal] { opacity: 0; transform: translateY(18px); transition: opacity 0.7s ease, transform 0.7s ease; transition-delay: var(--d, 0ms); }
+      [data-reveal].in { opacity: 1; transform: translateY(0); }
+      @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+      @media (max-width: 800px) { .hero { padding-top: 60px; } .hero::before { width: 260px; height: 260px; } .risk-row { grid-template-columns: 1fr; } .bar { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body>
@@ -492,385 +124,44 @@
           <div class="eyebrow">Energy Relay Station</div>
           <h1>能量中转站</h1>
           <p class="lead">
-            基于线下信任节点的可复制商业模型。钱不砸豪装，只砸验证复制；达标放大，
-            未达标按止损线快速收缩。
+            基于线下信任节点的可复制商业模型。钱不砸豪装，只砸验证复制；达标放大，未达标按止损线快速收缩。
           </p>
           <div class="cta-row">
-            <a class="btn primary" href="#cta">预约合作</a>
+            <a class="btn primary" href="mailto:3371272941@qq.com">预约合作</a>
             <a class="btn ghost" href="#validation">查看8周验证</a>
           </div>
           <div class="hero-metrics">
-            <div class="metric">
-              <span>60%</span>
-              目标毛利率
-            </div>
-            <div class="metric">
-              <span>8周</span>
-              单店模型验证
-            </div>
-            <div class="metric">
-              <span>2026</span>
-              马年窗口期
-            </div>
+            <div class="metric"><span>60%</span> 目标毛利率</div>
+            <div class="metric"><span>8周</span> 单店模型验证</div>
+            <div class="metric"><span>2026</span> 马年窗口期</div>
           </div>
         </div>
         <div class="hero-visual" data-reveal style="--d: 120ms">
           <h3>信任结构的三重节点</h3>
-          <div class="node">
-            <span class="node-dot"></span>
-            <div>可信信息整合点 · Trusted Info Hub</div>
-          </div>
-          <div class="node">
-            <span class="node-dot"></span>
-            <div>心理缓冲区 · Psychological Buffer</div>
-          </div>
-          <div class="node">
-            <span class="node-dot"></span>
-            <div>低风险连接器 · Low-risk Connector</div>
-          </div>
+          <div class="node"><span class="node-dot"></span><div>可信信息整合点 · Trusted Info Hub</div></div>
+          <div class="node"><span class="node-dot"></span><div>心理缓冲区 · Psychological Buffer</div></div>
+          <div class="node"><span class="node-dot"></span><div>低风险连接器 · Low-risk Connector</div></div>
         </div>
       </header>
-
-      <section id="why-now">
-        <div class="section-title">
-          <h2>为什么是现在</h2>
-        </div>
-        <div class="grid cols-3">
-          <div class="card" data-reveal>
-            <h3>长期稳定需求</h3>
-            <p>
-              多宗教共尊的圣地，朝圣需求跨越文化与周期，已被时间反复验证，并非营销制造。
-            </p>
-          </div>
-          <div class="card" data-reveal style="--d: 80ms">
-            <h3>短期确定性爆发</h3>
-            <p>
-              2026 马年窗口期，信仰传统中“转山功德放大 13 倍”，带来结构性放大而非线性增长。
-            </p>
-          </div>
-          <div class="card" data-reveal style="--d: 160ms">
-            <h3>人群结构变化</h3>
-            <p>
-              普通人和首次参与者比例上升，经验下降，安全、信息与心理承载需求同步激增。
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section id="pain">
-        <div class="section-title">
-          <h2>真实痛点</h2>
-        </div>
-        <div class="grid cols-3">
-          <div class="card" data-reveal>
-            <h3>转山前</h3>
-            <p>信息过载、拼车真伪难辨，选择失误放大高原风险。</p>
-          </div>
-          <div class="card" data-reveal style="--d: 80ms">
-            <h3>转山中</h3>
-            <p>极限状态下认知下降，微小不确定性放大为心理负担。</p>
-          </div>
-          <div class="card" data-reveal style="--d: 160ms">
-            <h3>转山后</h3>
-            <p>情绪高涨后迅速空虚，缺乏可被理解、不被消费的表达空间。</p>
-          </div>
-        </div>
-        <div class="quote" data-reveal style="--d: 200ms">
-          核心洞察：现代社会系统性缺失了极端体验后的“缓冲与回归”阶段。
-        </div>
-      </section>
-
-      <section id="misfit">
-        <div class="section-title">
-          <h2>市场供给错位</h2>
-        </div>
-        <div class="grid cols-3">
-          <div class="card" data-reveal>
-            <h3>攻略 / 游记</h3>
-            <p>解决“知道什么”，却无法为高风险场景下的实时决策承担责任。</p>
-          </div>
-          <div class="card" data-reveal style="--d: 80ms">
-            <h3>拼车群 / 社交平台</h3>
-            <p>匿名协作在高风险场景天然危险，信息焦虑直接升级为安全焦虑。</p>
-          </div>
-          <div class="card" data-reveal style="--d: 160ms">
-            <h3>传统“藏风”咖啡</h3>
-            <p>服务“观看高原的人”，而非“正在经历高原的人”。</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="solution">
-        <div class="section-title">
-          <h2>锚点式解决方案</h2>
-        </div>
-        <div class="grid cols-3">
-          <div class="card" data-reveal>
-            <h3>可信信息整合点</h3>
-            <p>提供精简、可执行、适用人群明确的决策支持。</p>
-          </div>
-          <div class="card" data-reveal style="--d: 80ms">
-            <h3>心理缓冲区</h3>
-            <p>转山前后可停留、不被打扰、不被消费的心理承载空间。</p>
-          </div>
-          <div class="card" data-reveal style="--d: 160ms">
-            <h3>低风险连接器</h3>
-            <p>用实体空间为可追溯资源提供信任背书，替代算法式信任。</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="space">
-        <div class="section-title">
-          <h2>30㎡停留型空间设计</h2>
-        </div>
-        <div class="zones">
-          <div class="zone" data-reveal>
-            <strong>咖啡区 · Infrastructure</strong>
-            <p>功能性、温热、易消化；咖啡是基础设施，而非主角。</p>
-          </div>
-          <div class="zone" data-reveal style="--d: 80ms">
-            <strong>信息区 · Decision Aid</strong>
-            <p>减少信息数量而非增加强度，提供精炼、可执行支持。</p>
-          </div>
-          <div class="zone" data-reveal style="--d: 160ms">
-            <strong>交流角 · Conversation Corner</strong>
-            <p>允许沉默、发呆、低声交谈，承载转山后的真实需求。</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="products">
-        <div class="section-title">
-          <h2>产品结构与毛利逻辑</h2>
-        </div>
-        <div class="grid cols-3">
-          <div class="card" data-reveal>
-            <h3>形象款</h3>
-            <p>去商品化纪念品（钛杯、明信片），沉淀品牌价值。</p>
-          </div>
-          <div class="card" data-reveal style="--d: 80ms">
-            <h3>利润款</h3>
-            <p>转山能量包、特色饮品，高毛利满足即时刚需。</p>
-          </div>
-          <div class="card" data-reveal style="--d: 160ms">
-            <h3>引流款</h3>
-            <p>功能性咖啡与热饮，维持基础客流与复购。</p>
-          </div>
-        </div>
-        <div class="kpi-strip" data-reveal style="--d: 200ms">
-          <div class="kpi">目标毛利率：60%</div>
-          <div class="kpi">产品服务“节点”功能</div>
-          <div class="kpi">不以商品主导行为</div>
-        </div>
-      </section>
-
-      <section id="validation">
-        <div class="section-title">
-          <h2>8周验证路线</h2>
-        </div>
-        <div class="timeline">
-          <div class="timeline-item" data-reveal>
-            <span>前置</span>
-            <p>锁定拉萨核心商圈点位（布宫 / 八廓街周边），合同押一付三优先。</p>
-          </div>
-          <div class="timeline-item" data-reveal style="--d: 80ms">
-            <span>Week 1</span>
-            <p>试运营压力测试，仅售 10 个核心 SKU，优化 SOP。</p>
-          </div>
-          <div class="timeline-item" data-reveal style="--d: 160ms">
-            <span>Week 6</span>
-            <p>接近盈亏平衡点，形成可复盘周报数据。</p>
-          </div>
-          <div class="timeline-item" data-reveal style="--d: 240ms">
-            <span>Week 8</span>
-            <p>达到关键指标后复制；未达标则执行止损线。</p>
-          </div>
-        </div>
-        <div class="kpi-strip" data-reveal style="--d: 260ms">
-          <div class="kpi">日均单量</div>
-          <div class="kpi">毛利率</div>
-          <div class="kpi">复购 / 推荐率</div>
-          <div class="kpi">现金流趋势</div>
-        </div>
-      </section>
-
-      <section id="economics">
-        <div class="section-title">
-          <h2>单位经济（示意）</h2>
-        </div>
-        <div class="grid cols-2">
-          <div class="card" data-reveal>
-            <h3>盈亏平衡基础</h3>
-            <p>目标毛利率 60%，日均约 52 单触及盈亏平衡。</p>
-            <div class="tag-row">
-              <div class="tag">月固定成本约 3.5 万</div>
-              <div class="tag">客单价示意 38 元</div>
-              <div class="tag">月营收目标约 5.9 万</div>
-            </div>
-          </div>
-          <div class="card" data-reveal style="--d: 80ms">
-            <h3>情景分析</h3>
-            <div class="barlist">
-              <div class="bar">
-                <span>保守 60 单/天</span>
-                <div class="bar-track"><div class="bar-fill" style="width: 40%"></div></div>
-              </div>
-              <div class="bar">
-                <span>基准 90 单/天</span>
-                <div class="bar-track"><div class="bar-fill" style="width: 65%"></div></div>
-              </div>
-              <div class="bar">
-                <span>进取 120 单/天</span>
-                <div class="bar-track"><div class="bar-fill" style="width: 88%"></div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="funding">
-        <div class="section-title">
-          <h2>启动资金规划</h2>
-        </div>
-        <div class="grid cols-2">
-          <div class="card" data-reveal>
-            <h3>目标规模</h3>
-            <p>寻求约 22 - 25 万元启动资金，完成首店 8 周验证。</p>
-          </div>
-          <div class="card" data-reveal style="--d: 80ms">
-            <h3>资金分配（比例）</h3>
-            <div class="barlist">
-              <div class="bar">
-                <span>房租相关 16%</span>
-                <div class="bar-track"><div class="bar-fill" style="width: 16%"></div></div>
-              </div>
-              <div class="bar">
-                <span>设备与改造 28%</span>
-                <div class="bar-track"><div class="bar-fill" style="width: 28%"></div></div>
-              </div>
-              <div class="bar">
-                <span>运营现金垫 28%</span>
-                <div class="bar-track"><div class="bar-fill" style="width: 28%"></div></div>
-              </div>
-              <div class="bar">
-                <span>风险预备金 20%</span>
-                <div class="bar-track"><div class="bar-fill" style="width: 20%"></div></div>
-              </div>
-              <div class="bar">
-                <span>物料杂费 8%</span>
-                <div class="bar-track"><div class="bar-fill" style="width: 8%"></div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="risk">
-        <div class="section-title">
-          <h2>风控与止损线</h2>
-        </div>
-        <div class="risk-grid">
-          <div class="risk-row" data-reveal>
-            <strong>租赁条款</strong>
-            <div>签约现金 > 7 万 / 年付要求</div>
-            <div>换点位或要求月付</div>
-          </div>
-          <div class="risk-row" data-reveal style="--d: 80ms">
-            <strong>客流不足</strong>
-            <div>连续 14 天日均 &lt; 40 单</div>
-            <div>调整产品结构 + 团购拉新</div>
-          </div>
-          <div class="risk-row" data-reveal style="--d: 160ms">
-            <strong>毛利侵蚀</strong>
-            <div>毛利率 &lt; 55% 或损耗 &gt; 5%</div>
-            <div>标准化培训，核心岗备份</div>
-          </div>
-          <div class="risk-row" data-reveal style="--d: 240ms">
-            <strong>口碑风险</strong>
-            <div>差评率 &gt; 2%</div>
-            <div>换人 / 降复杂度</div>
-          </div>
-          <div class="risk-row" data-reveal style="--d: 320ms">
-            <strong>止损线</strong>
-            <div>8 周后仍 &lt; 45 单</div>
-            <div>考虑迁址或关停</div>
-          </div>
-        </div>
-      </section>
-
-      <section id="replicate">
-        <div class="section-title">
-          <h2>复制逻辑与愿景</h2>
-        </div>
-        <div class="grid cols-2">
-          <div class="card" data-reveal>
-            <h3>复制“信任结构”</h3>
-            <p>
-              基于数据验证成功后复制功能区划逻辑、行为引导方式、运营原则与财务纪律，
-              而非统一装修或完全一致的产品。
-            </p>
-          </div>
-          <div class="card" data-reveal style="--d: 80ms">
-            <h3>长期价值</h3>
-            <p>
-              多节点形成分布式、低中心化的线下信任网络，成为极端体验人群的信任标签与判断参考。
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section id="team">
-        <div class="section-title">
-          <h2>团队与方法</h2>
-        </div>
-        <div class="grid cols-2">
-          <div class="card" data-reveal>
-            <h3>创始人优势</h3>
-            <p>深刻理解转山人群心理与行为，熟悉高原运营与供应链挑战。</p>
-          </div>
-          <div class="card" data-reveal style="--d: 80ms">
-            <h3>运营理念</h3>
-            <p>数据驱动决策，严格财务纪律，小步快跑、快速验证，设置明确止损线。</p>
-          </div>
-        </div>
-      </section>
-
       <section id="cta">
         <div class="cta" data-reveal>
           <h2>加入我们，共同打造真实、被需要且可盈利的信任节点</h2>
-          <p>
-            寻找认同“先验证、后复制”理念的早期投资人，或具备本地资源、物业协作的战略伙伴。
-          </p>
+          <p>寻找认同“先验证、后复制”理念的早期投资人，或具备本地资源、物业协作的战略伙伴。</p>
           <div class="cta-row">
-            <a class="btn primary" href="#">预约沟通</a>
+            <a class="btn primary" href="mailto:3371272941@qq.com">预约沟通</a>
             <a class="btn ghost" href="#validation">查看验证节点</a>
-          </div>
-          <div class="tag-row">
-            <div class="tag">下一步：确认首个试点位置</div>
-            <div class="tag">启动 8 周验证</div>
           </div>
         </div>
       </section>
-
       <footer>
-        [创始人姓名：许晓源] · [联系电话：15700400726] · [电子邮箱:3371272941@qq.com]
+        [创始人：许晓源] · [联系电话：15700400726] · [邮箱：3371272941@qq.com]
       </footer>
     </div>
-
     <script>
       const revealEls = document.querySelectorAll("[data-reveal]");
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("in");
-            }
-          });
-        },
-        { threshold: 0.2 }
-      );
-
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => { if (entry.isIntersecting) entry.target.classList.add("in"); });
+      }, { threshold: 0.2 });
       revealEls.forEach((el) => observer.observe(el));
     </script>
   </body>
