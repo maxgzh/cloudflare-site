@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>能量中转站 - 控制台</title>
+    <style>
+      body { background: #f4ecdf; font-family: sans-serif; text-align: center; padding-top: 100px; color: #2f251c; }
+      .card { background: white; padding: 40px; border-radius: 20px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+      h1 { color: #c0743a; }
+      .btn { padding: 10px 20px; background: #2f251c; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;}
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>🎉 欢迎回来！</h1>
+      <h2 id="welcomeMsg">加载中...</h2>
+      <p>这里是只有登录后才能看到的二级私密页面。</p>
+      
+      <button class="btn" onclick="logout()">退出登录</button>
+    </div>
+
+    <script>
+      // 检查是否有登录记录
+      const user = localStorage.getItem('currentUser');
+      if(!user) {
+        // 如果没登录，直接被踢回首页
+        alert('非法访问，请先登录！');
+        window.location.href = 'index.html';
+      } else {
+        document.getElementById('welcomeMsg').innerText = '尊贵的站长：' + user;
+      }
+
+      function logout() {
+        localStorage.removeItem('currentUser'); // 清除登录状态
+        window.location.href = 'index.html'; // 回到首页
+      }
+    </script>
+  </body>
+</html>
