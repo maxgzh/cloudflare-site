@@ -5,13 +5,13 @@ export async function onRequestGet(context) {
 
   try {
     if (type === "latest") {
-      # 1. 登录页用：只要最新的一张
+      // 1. 登录页用：只要最新的一张 (注意这里变成了双斜杠)
       const latest = await env.DB.prepare(
         "SELECT * FROM wall_table ORDER BY img_date DESC LIMIT 1"
       ).first();
       return new Response(JSON.stringify(latest), { headers: { "Content-Type": "application/json" } });
     } else {
-      # 2. 画廊页用：拿出所有的历史记录
+      // 2. 画廊页用：拿出所有的历史记录 (这里也是双斜杠)
       const { results } = await env.DB.prepare(
         "SELECT * FROM wall_table ORDER BY img_date DESC"
       ).all();
