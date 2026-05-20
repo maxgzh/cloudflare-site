@@ -11,6 +11,10 @@
         body::after { content: ""; position: fixed; inset: 0; background-image: repeating-linear-gradient(100deg, rgba(31, 26, 20, 0.04), rgba(31, 26, 20, 0.04) 1px, transparent 1px, transparent 12px), repeating-linear-gradient(10deg, rgba(31, 26, 20, 0.03), rgba(31, 26, 20, 0.03) 1px, transparent 1px, transparent 10px); opacity: 0.55; z-index: -1; pointer-events: none; }
         
         .auth-card { background: rgba(255, 255, 255, 0.8); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid var(--soft-line); width: 100%; max-width: 360px; backdrop-filter: blur(10px); z-index: 10;}
+        
+        /* 🌟 实时时钟样式：字体等宽防抖动 */
+        .clock-widget { text-align: center; font-size: 1.1rem; font-weight: 600; color: var(--coal); margin-bottom: 25px; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
+        
         .tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid var(--soft-line); }
         .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; font-weight: bold; color: #888; }
         .tab.active { color: var(--coal); border-bottom: 2px solid var(--coal); margin-bottom: -2px; }
@@ -21,44 +25,13 @@
         .btn:hover { transform: translateY(-2px); }
         #msg { margin-top: 15px; font-size: 0.9rem; text-align: center; color: #c0743a; font-weight: bold; min-height: 20px;}
 
-        /* 🌟 左上角高颜值天气组件 */
-        .weather-box {
-            position: absolute;
-            top: 25px;
-            left: 25px;
-            background: rgba(255, 255, 255, 0.45);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 12px 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-            border: 1px solid rgba(255,255,255,0.5);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            z-index: 10;
-            font-size: 14px;
-        }
+        /* 左上角天气组件 */
+        .weather-box { position: absolute; top: 25px; left: 25px; background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 12px 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.5); display: flex; align-items: center; gap: 15px; z-index: 10; font-size: 14px; }
         .weather-city { font-weight: bold; color: #c0743a; font-size: 15px;}
         .weather-temp { font-size: 20px; font-weight: bold; color: #2f251c; }
 
-        /* 🌟 右下角加大版必应壁纸卡片 */
-        #wallpaper-widget {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 220px;
-            background: rgba(255,255,255,0.85);
-            padding: 12px;
-            border-radius: 16px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-            backdrop-filter: blur(8px);
-            text-align: center;
-            font-size: 13px;
-            border: 1px solid #eee;
-            transition: transform 0.3s ease;
-            z-index: 10;
-        }
+        /* 右下角壁纸卡片 */
+        #wallpaper-widget { position: fixed; bottom: 25px; right: 25px; width: 220px; background: rgba(255,255,255,0.85); padding: 12px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); backdrop-filter: blur(8px); text-align: center; font-size: 13px; border: 1px solid #eee; transition: transform 0.3s ease; z-index: 10; }
         #wallpaper-widget:hover { transform: translateY(-5px) scale(1.02); }
         #today-img { width: 100%; height: 130px; object-fit: cover; border-radius: 10px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     </style>
@@ -75,6 +48,8 @@
     </div>
 
     <div class="auth-card">
+        <div class="clock-widget" id="realtime-clock">读取时间中...</div>
+
         <div class="tabs">
             <div class="tab active" id="tabLogin" onclick="switchTab('login')">登录</div>
             <div class="tab" id="tabRegister" onclick="switchTab('register')">注册账号</div>
@@ -101,7 +76,29 @@
     </div>
 
     <script>
-        // 1. 恢复：通过你稳定的 /api/weather 后端获取天气
+        // 🌟 新增：时钟引擎逻辑
+        function startClock() {
+            const clockEl = document.getElementById('realtime-clock');
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            
+            function update() {
+                const now = new Date();
+                const y = now.getFullYear();
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                const d = String(now.getDate()).padStart(2, '0');
+                const h = String(now.getHours()).padStart(2, '0');
+                const min = String(now.getMinutes()).padStart(2, '0');
+                const s = String(now.getSeconds()).padStart(2, '0');
+                const w = weekdays[now.getDay()];
+                
+                // 组合成：2026年05月20日 18:30:45 星期三
+                clockEl.innerText = `${y}年${m}月${d}日 ${h}:${min}:${s} ${w}`;
+            }
+            update(); // 页面加载先执行一次防止空白
+            setInterval(update, 1000); // 每一秒精准跳动一次
+        }
+
+        // 获取后端天气
         async function initWeather() {
             try {
                 const res = await fetch('/api/weather');
@@ -124,20 +121,18 @@
             }
         }
 
-        // 2. 页面加载执行
+        // 页面初始化
         window.onload = function() {
-            initWeather();
+            startClock();    // 启动时钟 🌟
+            initWeather();   // 启动天气
             
-            // 恢复你原始的壁纸请求逻辑（针对你的独立壁纸数据库）
-            // ⚠️ 提醒：如果后端的 /api/get-wallpapers 已经被咱们改成了云盘的接口，
-            // 建议你把壁纸独立的后端接口改个名字，比如 /api/get-public-wallpapers，然后在这里对应修改。
+            // 呼叫独立壁纸接口（已替换为你上一步新建的 get-public-wallpapers）
             fetch('/api/get-public-wallpapers?type=latest')
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.img_url) {
                         document.getElementById('today-img').src = data.img_url;
                     } else {
-                        // 兜底方案
                         document.getElementById('today-img').src = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN";
                     }
                 }).catch(() => {
@@ -145,7 +140,7 @@
                 });
         };
 
-        // 3. 选项卡切换逻辑
+        // 选项卡切换
         function switchTab(type) {
             document.getElementById('msg').innerText = '';
             if(type === 'login') {
@@ -157,7 +152,7 @@
             }
         }
 
-        // 4. 注册与登录逻辑（对接云盘）
+        // 注册
         async function doRegister() {
             const username = document.getElementById('regUser').value;
             const password = document.getElementById('regPwd').value;
@@ -182,6 +177,7 @@
             }
         }
 
+        // 登录
         async function doLogin() {
             const username = document.getElementById('loginUser').value;
             const password = document.getElementById('loginPwd').value;
