@@ -43,11 +43,10 @@
         .music-name { font-weight: bold; color: #c0743a; font-size: 13px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .music-status { font-size: 11px; color: #666; margin-top: 1px; }
         
-        /* 🌟 变得缓慢优雅的动感频谱条 */
+        /* 缓慢优雅的动感频谱条 */
         .music-bars { display: flex; align-items: flex-end; gap: 3px; height: 16px; width: 22px;}
         .music-bars .bar { width: 3px; height: 4px; background-color: #2f251c; border-radius: 2px; transition: height 0.4s ease-in-out; }
         
-        /* 播放时的动态跳动类（时间拉长，更加温柔） */
         .music-bars.playing .bar { animation: bounceBars 2s ease-in-out infinite alternate; }
         .music-bars.playing .bar:nth-child(1) { animation-duration: 1.4s; }
         .music-bars.playing .bar:nth-child(2) { animation-duration: 1.8s; }
@@ -66,7 +65,7 @@
 </head>
 <body>
 
-    <audio id="bgm-player" loop autoplay preload="auto" src="https://upload.wikimedia.org/wikipedia/commons/4/44/Erik_Satie_-_Gymnop%C3%A9die_No._1.ogg"></audio>
+    <audio id="bgm-player" loop preload="auto" src="https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"></audio>
 
     <div class="weather-box" id="weatherBox">
         <div style="font-size: 26px;" id="weatherIcon">🌍</div>
