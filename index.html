@@ -10,15 +10,12 @@
         body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(circle at 12% 10%, #f9efe0 0%, transparent 55%), radial-gradient(circle at 80% 18%, #f4d9b0 0%, transparent 60%), radial-gradient(circle at 70% 82%, #e9efe9 0%, transparent 55%), linear-gradient(160deg, #f6efe2 10%, #efe1cb 45%, #f4ecdf 100%); z-index: -2; }
         body::after { content: ""; position: fixed; inset: 0; background-image: repeating-linear-gradient(100deg, rgba(31, 26, 20, 0.04), rgba(31, 26, 20, 0.04) 1px, transparent 1px, transparent 12px), repeating-linear-gradient(10deg, rgba(31, 26, 20, 0.03), rgba(31, 26, 20, 0.03) 1px, transparent 1px, transparent 10px); opacity: 0.55; z-index: -1; pointer-events: none; }
         
-        /* 中心布局容器 */
         .center-wrapper { display: flex; flex-direction: column; align-items: center; gap: 30px; z-index: 10; width: 100%; max-width: 360px; }
 
-        /* 独立悬浮时钟 UI */
         .clock-widget { text-align: center; color: var(--coal); font-variant-numeric: tabular-nums; text-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .clock-time { font-size: 3rem; font-weight: 800; letter-spacing: 2px; line-height: 1; margin-bottom: 8px; }
         .clock-date { font-size: 1rem; font-weight: 600; opacity: 0.85; letter-spacing: 1px; }
 
-        /* 核心登录卡片 */
         .auth-card { background: rgba(255, 255, 255, 0.85); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid var(--soft-line); width: 100%; box-sizing: border-box; backdrop-filter: blur(10px); }
         
         .tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid var(--soft-line); }
@@ -31,12 +28,11 @@
         .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(47,37,28,0.2);}
         #msg { margin-top: 15px; font-size: 0.9rem; text-align: center; color: #c0743a; font-weight: bold; min-height: 20px;}
 
-        /* 左上角天气组件 */
         .weather-box { position: absolute; top: 25px; left: 25px; background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 12px 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.5); display: flex; align-items: center; gap: 15px; z-index: 10; font-size: 14px; }
         .weather-city { font-weight: bold; color: #c0743a; font-size: 15px;}
         .weather-temp { font-size: 20px; font-weight: bold; color: #2f251c; }
 
-        /* 🌟 右上角全新动态音乐组件 */
+        /* 🌟 修复后的动态音乐组件 */
         .music-box { 
             position: absolute; top: 25px; right: 25px; 
             background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
@@ -45,20 +41,25 @@
         }
         .music-box:hover { background: rgba(255, 255, 255, 0.6); }
         .music-info { text-align: right; }
-        .music-name { font-weight: bold; color: #c0743a; font-size: 13px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .music-name { font-weight: bold; color: #c0743a; font-size: 13px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .music-status { font-size: 11px; color: #666; margin-top: 1px; }
         
-        /* 动态音频跳动频谱条样式 */
-        .music-bars { display: flex; align-items: flex-end; gap: 3px; width: 18px; height: 16px; }
-        .music-bars .bar { width: 2px; height: 3px; background-color: var(--coal); border-radius: 1px; transition: height 0.2s ease; }
-        /* 播放状态下的跳动动画 */
-        .music-bars.playing .bar:nth-child(1) { animation: bounceBars 1.1s ease infinite alternate; }
-        .music-bars.playing .bar:nth-child(2) { animation: bounceBars 0.8s ease infinite alternate 0.15s; }
-        .music-bars.playing .bar:nth-child(3) { animation: bounceBars 1.4s ease infinite alternate 0.3s; }
-        .music-bars.playing .bar:nth-child(4) { animation: bounceBars 0.9s ease infinite alternate 0.05s; }
-        @keyframes bounceBars { 0% { height: 3px; } 100% { height: 16px; } }
+        /* 🌟 动感频谱条 UI */
+        .music-bars { display: flex; align-items: flex-end; gap: 3px; height: 16px; width: 22px;}
+        .music-bars .bar { width: 3px; height: 4px; background-color: #2f251c; border-radius: 2px; transition: height 0.2s; }
+        
+        /* 播放时的动态跳动类 */
+        .music-bars.playing .bar { animation: bounceBars 1s ease-in-out infinite alternate; }
+        .music-bars.playing .bar:nth-child(1) { animation-duration: 0.6s; }
+        .music-bars.playing .bar:nth-child(2) { animation-duration: 0.9s; }
+        .music-bars.playing .bar:nth-child(3) { animation-duration: 0.7s; }
+        .music-bars.playing .bar:nth-child(4) { animation-duration: 0.8s; }
+        
+        @keyframes bounceBars {
+            0% { height: 4px; }
+            100% { height: 16px; }
+        }
 
-        /* 右下角壁纸卡片 */
         #wallpaper-widget { position: fixed; bottom: 25px; right: 25px; width: 220px; background: rgba(255,255,255,0.85); padding: 12px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); backdrop-filter: blur(8px); text-align: center; font-size: 13px; border: 1px solid #eee; transition: transform 0.3s ease; z-index: 10; }
         #wallpaper-widget:hover { transform: translateY(-5px) scale(1.02); }
         #today-img { width: 100%; height: 130px; object-fit: cover; border-radius: 10px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -66,7 +67,7 @@
 </head>
 <body>
 
-    <audio id="bgm-player" loop src="https://ssl.p68.co/ambient-soft-piano.mp3"></audio>
+    <audio id="bgm-player" loop autoplay preload="auto" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
 
     <div class="weather-box" id="weatherBox">
         <div style="font-size: 26px;" id="weatherIcon">🌍</div>
@@ -77,10 +78,10 @@
         <div id="weatherTemp" class="weather-temp">--°C</div>
     </div>
 
-    <div class="music-box" id="musicBox" onclick="toggleMusic()">
+    <div class="music-box" id="musicBox" onclick="toggleMusic(event)">
         <div class="music-info">
-            <div class="music-name" id="musicName">遥远的记忆.mp3</div>
-            <div class="music-status" id="musicStatus">已静音 / 点击播放</div>
+            <div class="music-name" id="musicName">云端漫步.mp3</div>
+            <div class="music-status" id="musicStatus">系统静音 / 点击播放</div>
         </div>
         <div class="music-bars" id="musicBars">
             <div class="bar"></div>
@@ -91,7 +92,6 @@
     </div>
 
     <div class="center-wrapper">
-        
         <div class="clock-widget">
             <div class="clock-time" id="clock-time">00:00:00</div>
             <div class="clock-date" id="clock-date">读取中...</div>
@@ -129,21 +129,29 @@
         const musicBars = document.getElementById('musicBars');
         const musicStatus = document.getElementById('musicStatus');
 
-        // 🌟 音乐核心控制开关
-        function toggleMusic() {
+        // 🌟 修复后的核心音乐控制函数
+        function toggleMusic(e) {
+            if (e) e.stopPropagation(); // 防止点击事件冲突
+            
             if (audio.paused) {
+                // 尝试播放
                 audio.play().then(() => {
-                    musicBars.classList.add('playing');
-                    musicStatus.innerText = '正在精心播放';
-                }).catch(err => console.log("浏览器拦截了手动播放请求:", err));
+                    musicBars.classList.add('playing'); // 触发 UI 跳动动画
+                    musicStatus.innerText = '🎵 正在播放';
+                    musicStatus.style.color = '#3f6f6b';
+                }).catch(err => {
+                    console.error("音乐播放失败:", err);
+                    musicStatus.innerText = '播放失败(链接异常)';
+                    musicStatus.style.color = 'red';
+                });
             } else {
                 audio.pause();
-                musicBars.classList.remove('playing');
+                musicBars.classList.remove('playing'); // 停止 UI 动画
                 musicStatus.innerText = '已暂停播放';
+                musicStatus.style.color = '#666';
             }
         }
 
-        // 独立时钟跳动逻辑
         function startClock() {
             const timeEl = document.getElementById('clock-time');
             const dateEl = document.getElementById('clock-date');
@@ -166,22 +174,17 @@
             setInterval(update, 1000); 
         }
 
-        // 获取后端天气
         async function initWeather() {
             try {
                 const res = await fetch('/api/weather');
                 const data = await res.json();
-                
                 if (data.success) {
                     document.getElementById('weatherIcon').innerText = data.icon;
                     document.getElementById('weatherLocation').innerText = data.city;
                     document.getElementById('weatherDetail').innerText = data.desc;
                     document.getElementById('weatherTemp').innerText = `${data.temp}°C`;
-                } else {
-                    throw new Error("后端数据异常");
-                }
+                } else { throw new Error("后端数据异常"); }
             } catch (error) {
-                console.warn("天气加载失败:", error);
                 document.getElementById('weatherIcon').innerText = "☁️";
                 document.getElementById('weatherLocation').innerText = "地球";
                 document.getElementById('weatherDetail').innerText = "无信号";
@@ -189,34 +192,26 @@
             }
         }
 
-        // 页面初始化
         window.onload = function() {
             startClock();  
             initWeather(); 
             
-            // 引导用户进行任意页面交互时自动触发播放（提升用户体验）
-            document.body.addEventListener('click', function initialPlay() {
-                if(audio.paused && musicStatus.innerText === '已静音 / 点击播放') {
+            // 🌟 解决浏览器拦截：监听全屏任意第一次点击，自动触发播放并启动频谱动画！
+            document.body.addEventListener('click', function autoPlayMusic() {
+                if(audio.paused) {
                     toggleMusic();
                 }
-                document.body.removeEventListener('click', initialPlay);
+                document.body.removeEventListener('click', autoPlayMusic);
             }, { once: true });
 
-            // 呼叫独立公共壁纸接口
             fetch('/api/get-public-wallpapers?type=latest')
                 .then(res => res.json())
                 .then(data => {
-                    if (data && data.img_url) {
-                        document.getElementById('today-img').src = data.img_url;
-                    } else {
-                        document.getElementById('today-img').src = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN";
-                    }
-                }).catch(() => {
-                    document.getElementById('today-img').src = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN";
-                });
+                    if (data && data.img_url) { document.getElementById('today-img').src = data.img_url; } 
+                    else { document.getElementById('today-img').src = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN"; }
+                }).catch(() => { document.getElementById('today-img').src = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN"; });
         };
 
-        // 选项卡切换
         function switchTab(type) {
             document.getElementById('msg').innerText = '';
             if(type === 'login') {
@@ -228,53 +223,34 @@
             }
         }
 
-        // 注册
         async function doRegister() {
             const username = document.getElementById('regUser').value;
             const password = document.getElementById('regPwd').value;
             const msg = document.getElementById('msg');
             msg.style.color = '#c0743a';
-            
             if(!username || !password) return msg.innerText = '账号和密码不能为空！';
-
-            const res = await fetch('/api/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
+            const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
             const data = await res.json();
             if (res.ok) {
-                msg.style.color = '#3f6f6b';
-                msg.innerText = '注册成功！已实时写入云端数据库。';
+                msg.style.color = '#3f6f6b'; msg.innerText = '注册成功！已实时写入云端数据库。';
                 document.getElementById('regUser').value = ''; document.getElementById('regPwd').value = '';
                 setTimeout(() => { switchTab('login'); }, 1500);
-            } else {
-                msg.innerText = data.error || '注册失败';
-            }
+            } else { msg.innerText = data.error || '注册失败'; }
         }
 
-        // 登录
         async function doLogin() {
             const username = document.getElementById('loginUser').value;
             const password = document.getElementById('loginPwd').value;
             const msg = document.getElementById('msg');
             msg.style.color = '#c0743a';
-            
             if(!username || !password) return msg.innerText = '账号和密码不能为空！';
-
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
+            const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
             const data = await res.json();
             if (res.ok) {
                 msg.style.color = '#3f6f6b'; msg.innerText = '验证通过！正在进入控制台...';
                 localStorage.setItem('currentUser', username);
                 setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
-            } else {
-                msg.innerText = data.error || '登录失败';
-            }
+            } else { msg.innerText = data.error || '登录失败'; }
         }
     </script>
 </body>
