@@ -131,7 +131,7 @@
             // 恢复你原始的壁纸请求逻辑（针对你的独立壁纸数据库）
             // ⚠️ 提醒：如果后端的 /api/get-wallpapers 已经被咱们改成了云盘的接口，
             // 建议你把壁纸独立的后端接口改个名字，比如 /api/get-public-wallpapers，然后在这里对应修改。
-            fetch('/api/get-wallpapers?type=latest')
+            fetch('/api/get-public-wallpapers?type=latest')
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.img_url) {
