@@ -1,22 +1,28 @@
 export async function onRequestGet(context) {
   const { env, request } = context;
   const url = new URL(request.url);
-  const type = url.searchParams.get("type"); // 获取参数，看是只要一张还是全部
+  const username = url.searchParams.get("username"); 
+  const folder_path = url.searchParams.get("folder_path") || '/';
+
+  // ⚠️ 记得把下面这里改成你在第四步开启的那个 r2.dev 公共网址，末尾不要带斜杠 /
+  const R2_PUBLIC_URL = "https://pub-xxxxxx.r2.dev"; 
+
+  if (!username) return new Response(JSON.stringify({ error: "未登录" }), { status: 400 });
 
   try {
-    if (type === "latest") {
-      // 1. 登录页用：只要最新的一张 (注意这里变成了双斜杠)
-      const latest = await env.DB.prepare(
-        "SELECT * FROM wall_table ORDER BY img_date DESC LIMIT 1"
-      ).first();
-      return new Response(JSON.stringify(latest), { headers: { "Content-Type": "application/json" } });
-    } else {
-      // 2. 画廊页用：拿出所有的历史记录 (这里也是双斜杠)
-      const { results } = await env.DB.prepare(
-        "SELECT * FROM wall_table ORDER BY img_date DESC"
-      ).all();
-      return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
-    }
+    const { results } = await env.DB.prepare(
+      "SELECT id, file_name, file_type, file_data, created_at, folder_path FROM user_files WHERE username = ? AND folder_path = ? ORDER BY file_type DESC, created_at DESC"
+    ).bind(username, folder_path).all();
+    
+    // 自动拼接上 R2 的真实下载链接
+    const mergedResults = results.map(file => {
+      if (file.file_type !== 'folder') {
+        file.download_url = `${R2_PUBLIC_URL}/${file.file_data}`;
+      }
+      return file;
+    });
+
+    return new Response(JSON.stringify(mergedResults), { headers: { "Content-Type": "application/json" } });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
