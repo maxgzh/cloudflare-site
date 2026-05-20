@@ -1,40 +1,127 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>能量中转站 - 控制台</title>
     <style>
-      body { background: #f4ecdf; font-family: sans-serif; text-align: center; padding-top: 100px; color: #2f251c; }
-      .card { background: white; padding: 40px; border-radius: 20px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-      h1 { color: #c0743a; }
-      .btn { padding: 10px 20px; background: #2f251c; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;}
+        body { font-family: sans-serif; background: #f4ecdf; margin: 0; padding: 20px; color: #2f251c; }
+        .container { max-width: 600px; margin: 40px auto; background: rgba(255,255,255,0.9); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        h1 { margin-top: 0; color: #c0743a; }
+        .upload-section { background: #efe1cb; padding: 20px; border-radius: 12px; margin: 20px 0; }
+        .btn { background: #2f251c; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .file-link { color: #c0743a; text-decoration: none; font-weight: bold; }
+        .logout { float: right; color: #888; text-decoration: none; font-size: 14px; }
     </style>
-  </head>
-  <body>
-    <div class="card">
-      <h1>🎉 欢迎回来！</h1>
-      <h2 id="welcomeMsg">加载中...</h2>
-      <p>这里是只有登录后才能看到的二级私密页面。</p>
-      
-      <button class="btn" onclick="logout()">退出登录</button>
+</head>
+<body>
+
+<div class="container">
+    <a href="#" class="logout" onclick="logout()">退出登录</a>
+    <h1 id="welcome-title">正在加载身份信息...</h1>
+    
+    <div class="upload-section">
+        <h3>上传文件到云端数据库 (限1MB内)</h3>
+        <input type="file" id="fileInput">
+        <button class="btn" onclick="uploadFile()">开始上传</button>
+        <p id="uploadStatus" style="font-size: 12px; color: #666;"></p>
     </div>
 
-    <script>
-      // 检查是否有登录记录
-      const user = localStorage.getItem('currentUser');
-      if(!user) {
-        // 如果没登录，直接被踢回首页
-        alert('非法访问，请先登录！');
-        window.location.href = 'index.html';
-      } else {
-        document.getElementById('welcomeMsg').innerText = '尊贵的站长：' + user;
-      }
+    <h3>我的私有文件网盘</h3>
+    <div id="fileList">正在加载您的专属文件列表...</div>
+</div>
 
-      function logout() {
-        localStorage.removeItem('currentUser'); // 清除登录状态
-        window.location.href = 'index.html'; // 回到首页
-      }
-    </script>
-  </body>
+<script>
+    // 1. 进来先验明正身
+    const currentUser = localStorage.getItem('currentUser');
+    if (!currentUser) {
+        alert('请先登录！');
+        window.location.href = 'index.html';
+    } else {
+        // 别人登录展示名字，如果是你登录，你可以代码里单独加判断，这里直接展示用户名
+        document.getElementById('welcome-title').innerText = `欢迎您，${currentUser}`;
+        loadMyFiles(); // 加载自己的文件
+    }
+
+    // 2. 加载当前用户专属文件的函数
+    async function loadMyFiles() {
+        const res = await fetch(`/api/get-files?username=${encodeURIComponent(currentUser)}`);
+        const files = await res.json();
+        const listDiv = document.getElementById('fileList');
+        
+        if (!files || files.length === 0) {
+            listDiv.innerHTML = '<p style="color:#888;">您的私有云盘空空如也，传个文件试试吧！</p>';
+            return;
+        }
+
+        listDiv.innerHTML = '';
+        files.forEach(file => {
+            listDiv.innerHTML += `
+                <div class="file-item">
+                    <div>
+                        <strong>${file.file_name}</strong>
+                        <div style="font-size:10px; color:#999;">${file.created_at}</div>
+                    </div>
+                    <a class="file-link" href="${file.file_data}" download="${file.file_name}">下载/查看</a>
+                </div>
+            `;
+        });
+    }
+
+    // 3. 上传文件逻辑（核心：转成 Base64 塞给后端）
+    function uploadFile() {
+        const fileInput = document.getElementById('fileInput');
+        const status = document.getElementById('uploadStatus');
+        if (fileInput.files.length === 0) {
+            alert('请先选择一个文件！');
+            return;
+        }
+
+        const file = fileInput.files[0];
+        if (file.size > 1024 * 1024) {
+            alert('文件超过1MB限制，D1数据库塞不下啦！请换个小文件测试。');
+            return;
+        }
+
+        status.innerText = "正在读取并加密文件...";
+        const reader = new FileReader();
+        
+        // 读取完成后触发
+        reader.onload = async function() {
+            const base64Data = reader.result; // 这就是文件的 Base64 字符串
+            status.innerText = "正在安全写入云端 D1 数据库...";
+
+            const res = await fetch('/api/upload-file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: currentUser,
+                    file_name: file.name,
+                    file_type: file.type,
+                    file_data: base64Data
+                })
+            });
+
+            const result = await res.json();
+            if (result.success) {
+                status.style.color = "green";
+                status.innerText = "🎉 上传成功！已存入您的私有空间。";
+                fileInput.value = ''; // 清空选择器
+                loadMyFiles(); // 刷新列表
+            } else {
+                status.style.color = "red";
+                status.innerText = "上传失败: " + result.error;
+            }
+        };
+
+        reader.readAsDataURL(file); // 开始将文件转为Base64
+    }
+
+    function logout() {
+        localStorage.removeItem('currentUser');
+        window.location.href = 'index.html';
+    }
+</script>
+</body>
 </html>
