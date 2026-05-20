@@ -1,119 +1,208 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
+<head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>能量中转站 - 登录</title>
     <style>
-      :root { --sand: #f4ecdf; --coal: #2f251c; --soft-line: rgba(31, 26, 20, 0.15); }
-      body { margin: 0; padding: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; background: var(--sand); font-family: sans-serif; }
-      body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(circle at 12% 10%, #f9efe0 0%, transparent 55%), radial-gradient(circle at 80% 18%, #f4d9b0 0%, transparent 60%), radial-gradient(circle at 70% 82%, #e9efe9 0%, transparent 55%), linear-gradient(160deg, #f6efe2 10%, #efe1cb 45%, #f4ecdf 100%); z-index: -2; }
-      body::after { content: ""; position: fixed; inset: 0; background-image: repeating-linear-gradient(100deg, rgba(31, 26, 20, 0.04), rgba(31, 26, 20, 0.04) 1px, transparent 1px, transparent 12px), repeating-linear-gradient(10deg, rgba(31, 26, 20, 0.03), rgba(31, 26, 20, 0.03) 1px, transparent 1px, transparent 10px); opacity: 0.55; z-index: -1; pointer-events: none; }
-      .auth-card { background: rgba(255, 255, 255, 0.8); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid var(--soft-line); width: 100%; max-width: 360px; backdrop-filter: blur(10px); }
-      .tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid var(--soft-line); }
-      .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; font-weight: bold; color: #888; }
-      .tab.active { color: var(--coal); border-bottom: 2px solid var(--coal); margin-bottom: -2px; }
-      .input-group { margin-bottom: 16px; }
-      .input-group label { display: block; font-size: 0.9rem; margin-bottom: 6px; color: var(--coal); font-weight: bold;}
-      .input-group input { width: 100%; padding: 12px; border: 1px solid var(--soft-line); border-radius: 8px; box-sizing: border-box; background: rgba(255,255,255,0.9); outline: none;}
-      .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; background: var(--coal); color: white; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-      .btn:hover { transform: translateY(-2px); }
-      #msg { margin-top: 15px; font-size: 0.9rem; text-align: center; color: #c0743a; font-weight: bold; min-height: 20px;}
+        :root { --sand: #f4ecdf; --coal: #2f251c; --soft-line: rgba(31, 26, 20, 0.15); }
+        body { margin: 0; padding: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; background: var(--sand); font-family: sans-serif; overflow: hidden;}
+        body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(circle at 12% 10%, #f9efe0 0%, transparent 55%), radial-gradient(circle at 80% 18%, #f4d9b0 0%, transparent 60%), radial-gradient(circle at 70% 82%, #e9efe9 0%, transparent 55%), linear-gradient(160deg, #f6efe2 10%, #efe1cb 45%, #f4ecdf 100%); z-index: -2; }
+        body::after { content: ""; position: fixed; inset: 0; background-image: repeating-linear-gradient(100deg, rgba(31, 26, 20, 0.04), rgba(31, 26, 20, 0.04) 1px, transparent 1px, transparent 12px), repeating-linear-gradient(10deg, rgba(31, 26, 20, 0.03), rgba(31, 26, 20, 0.03) 1px, transparent 1px, transparent 10px); opacity: 0.55; z-index: -1; pointer-events: none; }
+        
+        .auth-card { background: rgba(255, 255, 255, 0.8); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid var(--soft-line); width: 100%; max-width: 360px; backdrop-filter: blur(10px); z-index: 10;}
+        .tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid var(--soft-line); }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; font-weight: bold; color: #888; }
+        .tab.active { color: var(--coal); border-bottom: 2px solid var(--coal); margin-bottom: -2px; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 0.9rem; margin-bottom: 6px; color: var(--coal); font-weight: bold;}
+        .input-group input { width: 100%; padding: 12px; border: 1px solid var(--soft-line); border-radius: 8px; box-sizing: border-box; background: rgba(255,255,255,0.9); outline: none;}
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; background: var(--coal); color: white; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn:hover { transform: translateY(-2px); }
+        #msg { margin-top: 15px; font-size: 0.9rem; text-align: center; color: #c0743a; font-weight: bold; min-height: 20px;}
+
+        /* 🌟 左上角高颜值天气组件 */
+        .weather-box {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 12px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            border: 1px solid rgba(255,255,255,0.5);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 10;
+            font-size: 14px;
+        }
+        .weather-city { font-weight: bold; color: #c0743a; font-size: 15px;}
+        .weather-temp { font-size: 20px; font-weight: bold; color: #2f251c; }
+
+        /* 🌟 右下角加大版必应壁纸卡片 */
+        #wallpaper-widget {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 220px; /* 从原先的 150px 放大 */
+            background: rgba(255,255,255,0.85);
+            padding: 12px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            backdrop-filter: blur(8px);
+            text-align: center;
+            font-size: 13px;
+            border: 1px solid #eee;
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+        #wallpaper-widget:hover { transform: translateY(-5px) scale(1.02); }
+        #today-img { width: 100%; height: 130px; object-fit: cover; border-radius: 10px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     </style>
-  </head>
-  <body>
-    <div class="auth-card">
-      <div class="tabs">
-        <div class="tab active" id="tabLogin" onclick="switchTab('login')">登录</div>
-        <div class="tab" id="tabRegister" onclick="switchTab('register')">注册账号</div>
-      </div>
+</head>
+<body>
 
-      <div id="loginForm">
-        <div class="input-group"><label>账号</label><input type="text" id="loginUser" placeholder="输入账号"></div>
-        <div class="input-group"><label>密码</label><input type="password" id="loginPwd" placeholder="输入密码"></div>
-        <button class="btn" onclick="doLogin()">安全登录</button>
-      </div>
-
-      <div id="registerForm" style="display: none;">
-        <div class="input-group"><label>设置账号</label><input type="text" id="regUser" placeholder="起个名字"></div>
-        <div class="input-group"><label>设置密码</label><input type="password" id="regPwd" placeholder="设置密码"></div>
-        <button class="btn" onclick="doRegister()" style="background: #c0743a;">提交到云数据库</button>
-      </div>
-      <div id="msg"></div>
+    <div class="weather-box" id="weatherBox">
+        <div style="font-size: 26px;" id="weatherIcon">🔍</div>
+        <div>
+            <div id="weatherLocation" class="weather-city">正在定位...</div>
+            <div style="font-size: 12px; color: #666; margin-top: 2px;" id="weatherDetail">获取天气中</div>
+        </div>
+        <div id="weatherTemp" class="weather-temp">--°C</div>
     </div>
 
-    <div id="wallpaper-widget" style="position: fixed; bottom: 20px; right: 20px; width: 150px; background: rgba(255,255,255,0.8); padding: 8px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); backdrop-filter: blur(5px); text-align: center; font-size: 12px; border: 1px solid #eee;">
-    <p style="margin: 0 0 5px 0; color: #666;">今日必应壁纸</p>
-    <img id="today-img" src="" style="width: 100%; border-radius: 8px; cursor: pointer; transition: 0.3s;" onclick="window.open(this.src)">
-    <a href="wallpapers.html" style="display: block; margin-top: 8px; color: #007bff; text-decoration: none; font-weight: bold;">查看更多壁纸 &raquo;</a>
-</div>
+    <div class="auth-card">
+        <div class="tabs">
+            <div class="tab active" id="tabLogin" onclick="switchTab('login')">登录</div>
+            <div class="tab" id="tabRegister" onclick="switchTab('register')">注册账号</div>
+        </div>
 
-<script>
-    // 页面加载时，去后台把最新壁纸链接拿回来
-    fetch('/api/get-wallpapers?type=latest')
-        .then(res => res.json())
-        .then(data => {
-            if (data && data.img_url) {
-                document.getElementById('today-img').src = data.img_url;
-            }
-        });
-</script>
+        <div id="loginForm">
+            <div class="input-group"><label>账号</label><input type="text" id="loginUser" placeholder="输入账号"></div>
+            <div class="input-group"><label>密码</label><input type="password" id="loginPwd" placeholder="输入密码"></div>
+            <button class="btn" onclick="doLogin()">安全登录</button>
+        </div>
+
+        <div id="registerForm" style="display: none;">
+            <div class="input-group"><label>设置账号</label><input type="text" id="regUser" placeholder="起个名字"></div>
+            <div class="input-group"><label>设置密码</label><input type="password" id="regPwd" placeholder="设置密码"></div>
+            <button class="btn" onclick="doRegister()" style="background: #c0743a;">提交到云数据库</button>
+        </div>
+        <div id="msg"></div>
+    </div>
+
+    <div id="wallpaper-widget">
+        <p style="margin: 0 0 8px 0; color: #555; font-weight: bold;">今日必应壁纸</p>
+        <img id="today-img" src="" onclick="window.open(this.src)">
+        <a href="dashboard.html" style="display: block; margin-top: 10px; color: #c0743a; text-decoration: none; font-weight: bold;">查看更多壁纸 &raquo;</a>
+    </div>
 
     <script>
-      function switchTab(type) {
-        document.getElementById('msg').innerText = '';
-        if(type === 'login') {
-          document.getElementById('tabLogin').classList.add('active'); document.getElementById('tabRegister').classList.remove('active');
-          document.getElementById('loginForm').style.display = 'block'; document.getElementById('registerForm').style.display = 'none';
-        } else {
-          document.getElementById('tabRegister').classList.add('active'); document.getElementById('tabLogin').classList.remove('active');
-          document.getElementById('registerForm').style.display = 'block'; document.getElementById('loginForm').style.display = 'none';
+        // 🌟 初始化天气（调用后端的 /api/weather 接口防跨域）
+        async function initWeather() {
+            try {
+                const res = await fetch('/api/weather');
+                const data = await res.json();
+                
+                let icon = "☀️";
+                const desc = data.desc.toLowerCase();
+                if (desc.includes("雨")) icon = "🌧️";
+                else if (desc.includes("云") || desc.includes("阴")) icon = "☁️";
+                else if (desc.includes("雪")) icon = "❄️";
+                else if (desc.includes("雾") || desc.includes("霾")) icon = "🌫️";
+
+                document.getElementById('weatherIcon').innerText = icon;
+                document.getElementById('weatherLocation').innerText = data.city;
+                document.getElementById('weatherDetail').innerText = data.desc;
+                document.getElementById('weatherTemp').innerText = `${data.temp}°C`;
+
+            } catch (error) {
+                console.error("天气获取失败:", error);
+                document.getElementById('weatherIcon').innerText = "🌤️";
+                document.getElementById('weatherLocation').innerText = "中转站";
+                document.getElementById('weatherDetail').innerText = "网络同步中";
+                document.getElementById('weatherTemp').innerText = "--°C";
+            }
         }
-      }
 
-      async function doRegister() {
-        const username = document.getElementById('regUser').value;
-        const password = document.getElementById('regPwd').value;
-        const msg = document.getElementById('msg');
-        msg.style.color = '#c0743a';
+        // 页面加载时执行
+        window.onload = function() {
+            initWeather();
+            // 加载壁纸
+            fetch('/api/get-wallpapers?type=latest')
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.img_url) {
+                        document.getElementById('today-img').src = data.img_url;
+                    } else {
+                        // 如果后端没返回，用一个原生的 Bing API 兜底
+                        document.getElementById('today-img').src = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN";
+                    }
+                }).catch(() => {
+                    document.getElementById('today-img').src = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN";
+                });
+        };
 
-        // 这里呼叫了你刚刚写的后端文件 /api/register
-        const res = await fetch('/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          msg.style.color = '#3f6f6b';
-          msg.innerText = '注册成功！已实时写入云端数据库。';
-          document.getElementById('regUser').value = ''; document.getElementById('regPwd').value = '';
-        } else {
-          msg.innerText = data.error || '注册失败';
+        // 选项卡切换逻辑
+        function switchTab(type) {
+            document.getElementById('msg').innerText = '';
+            if(type === 'login') {
+                document.getElementById('tabLogin').classList.add('active'); document.getElementById('tabRegister').classList.remove('active');
+                document.getElementById('loginForm').style.display = 'block'; document.getElementById('registerForm').style.display = 'none';
+            } else {
+                document.getElementById('tabRegister').classList.add('active'); document.getElementById('tabLogin').classList.remove('active');
+                document.getElementById('registerForm').style.display = 'block'; document.getElementById('loginForm').style.display = 'none';
+            }
         }
-      }
 
-      async function doLogin() {
-        const username = document.getElementById('loginUser').value;
-        const password = document.getElementById('loginPwd').value;
-        const msg = document.getElementById('msg');
-        msg.style.color = '#c0743a';
+        // 注册逻辑（对接云数据库）
+        async function doRegister() {
+            const username = document.getElementById('regUser').value;
+            const password = document.getElementById('regPwd').value;
+            const msg = document.getElementById('msg');
+            msg.style.color = '#c0743a';
 
-        // 这里呼叫了你刚刚写的后端文件 /api/login
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          msg.style.color = '#3f6f6b'; msg.innerText = '验证通过！正在进入控制台...';
-          localStorage.setItem('currentUser', username);
-          setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
-        } else {
-          msg.innerText = data.error || '登录失败';
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                msg.style.color = '#3f6f6b';
+                msg.innerText = '注册成功！已实时写入云端数据库。';
+                document.getElementById('regUser').value = ''; document.getElementById('regPwd').value = '';
+                // 注册成功后，延迟一秒自动跳回登录页面
+                setTimeout(() => { switchTab('login'); }, 1500);
+            } else {
+                msg.innerText = data.error || '注册失败';
+            }
         }
-      }
+
+        // 登录逻辑（对接云数据库）
+        async function doLogin() {
+            const username = document.getElementById('loginUser').value;
+            const password = document.getElementById('loginPwd').value;
+            const msg = document.getElementById('msg');
+            msg.style.color = '#c0743a';
+
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                msg.style.color = '#3f6f6b'; msg.innerText = '验证通过！正在进入控制台...';
+                localStorage.setItem('currentUser', username);
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
+            } else {
+                msg.innerText = data.error || '登录失败';
+            }
+        }
     </script>
-  </body>
+</body>
 </html>
