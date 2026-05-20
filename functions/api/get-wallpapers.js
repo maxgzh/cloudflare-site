@@ -5,7 +5,7 @@ export async function onRequestGet(context) {
   const folder_path = url.searchParams.get("folder_path") || '/';
 
   // ⚠️ 记得把下面这里改成你在第四步开启的那个 r2.dev 公共网址，末尾不要带斜杠 /
-  const R2_PUBLIC_URL = "https://pub-xxxxxx.r2.dev"; 
+  const R2_PUBLIC_URL = "https://pub-f068a15eec71489c8b70b0e36a5addfd.r2.dev"; 
 
   if (!username) return new Response(JSON.stringify({ error: "未登录" }), { status: 400 });
 
