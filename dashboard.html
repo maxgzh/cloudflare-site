@@ -3,22 +3,35 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>我的私有云盘 - 高级版</title>
+    <title>我的私有云盘</title>
     <style>
         body { font-family: sans-serif; background: #f4ecdf; margin: 0; padding: 20px; color: #2f251c; }
-        .container { max-width: 650px; margin: 40px auto; background: rgba(255,255,255,0.9); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .container { max-width: 700px; margin: 40px auto; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         h1 { margin-top: 0; color: #c0743a; }
         .upload-section { background: #efe1cb; padding: 20px; border-radius: 12px; margin: 20px 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
         .btn { background: #2f251c; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn:hover { opacity: 0.9; }
         .file-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); }
         .file-link { color: #c0743a; text-decoration: none; font-weight: bold; margin-right: 10px; cursor: pointer;}
-        .path-nav { font-weight: bold; margin-bottom: 15px; padding: 10px; background: #e9efe9; border-radius: 8px;}
+        .path-nav { font-weight: bold; margin-bottom: 15px; padding: 10px; background: #e9efe9; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;}
         .file-info { display: flex; flex-direction: column; }
         .file-meta { font-size: 11px; color: #888; margin-top: 3px; }
-        /* 🌟 预览区域样式 */
+        
         .preview-box { margin-top: 10px; padding: 10px; background: #fdfaf4; border: 1px dashed #efe1cb; border-radius: 8px; display: none; }
         .preview-img { max-width: 100%; max-height: 200px; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         audio { width: 100%; margin-top: 5px; }
+
+        /* 🌟 新增：画廊模式样式 */
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; display: none; margin-top: 15px; }
+        .gallery-item { position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.2s; background: #eee;}
+        .gallery-item:hover { transform: scale(1.03); }
+        .gallery-item img { width: 100%; height: 140px; object-fit: cover; display: block; }
+        .gallery-item .overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: white; padding: 6px 10px; font-size: 11px; font-weight: bold; backdrop-filter: blur(4px); }
+        
+        /* 🌟 全屏大图查看器 */
+        #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 9999; flex-direction: column; }
+        #lightbox img { max-width: 90%; max-height: 80vh; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+        #lightbox .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 30px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -28,8 +41,11 @@
     <h1 id="welcome-title">正在加载...</h1>
     
     <div class="path-nav">
-        当前路径: <span id="currentPathDisplay">/</span>
-        <button onclick="goUp()" class="btn" style="float: right; padding: 4px 10px; background: #888;">返回上一级</button>
+        <div>当前路径: <span id="currentPathDisplay">/</span></div>
+        <div>
+            <button onclick="toggleViewMode()" id="viewToggleBtn" class="btn" style="background: #c0743a; padding: 4px 10px; margin-right: 5px;">🖼️ 画廊模式</button>
+            <button onclick="goUp()" class="btn" style="padding: 4px 10px; background: #888;">返回上一级</button>
+        </div>
     </div>
 
     <div class="upload-section">
@@ -46,22 +62,32 @@
     </div>
     <p id="uploadStatus" style="font-size: 12px; color: #666; font-weight: bold;"></p>
 
-    <h3>我的私有文件网盘</h3>
+    <h3>我的私有云盘</h3>
+    
     <div id="fileList">正在加载列表...</div>
+    
+    <div id="galleryGrid" class="gallery-grid"></div>
+
+</div>
+
+<div id="lightbox" onclick="closeLightbox()">
+    <span class="close-btn">&times;</span>
+    <img id="lightbox-img" src="" alt="大图">
+    <div id="lightbox-name" style="color: white; margin-top: 15px; font-weight: bold; font-size: 14px;"></div>
 </div>
 
 <script>
     const currentUser = localStorage.getItem('currentUser');
     let currentPath = '/'; 
+    let allFiles = []; // 保存当前目录的所有文件数据
+    let isGalleryMode = false; // 当前是否为画廊模式
 
-    if (!currentUser) {
-        window.location.href = 'index.html';
-    } else {
+    if (!currentUser) { window.location.href = 'index.html'; } 
+    else {
         document.getElementById('welcome-title').innerText = `欢迎您，${currentUser}`;
         loadMyFiles(); 
     }
 
-    // 💡 小工具：把字节大小自动转换成 KB 或 MB，方便阅读
     function formatBytes(bytes) {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
@@ -70,124 +96,151 @@
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
-    // 1. 获取列表（包含文件大小展示和智能预览按钮）
     async function loadMyFiles() {
         document.getElementById('currentPathDisplay').innerText = currentPath;
         const res = await fetch(`/api/get-wallpapers?username=${encodeURIComponent(currentUser)}&folder_path=${encodeURIComponent(currentPath)}`);
-        const files = await res.json();
+        allFiles = await res.json();
+        renderView(); 
+    }
+
+    // 🌟 统一渲染视图（根据模式渲染列表或画廊）
+    function renderView() {
         const listDiv = document.getElementById('fileList');
-        
-        if (!files || files.length === 0) {
+        const galleryDiv = document.getElementById('galleryGrid');
+
+        if (!allFiles || allFiles.length === 0) {
+            listDiv.style.display = 'block';
+            galleryDiv.style.display = 'none';
             listDiv.innerHTML = '<p style="color:#888;">这里空空如也，传个文件或建个文件夹吧！</p>';
             return;
         }
 
-        listDiv.innerHTML = '';
-        files.forEach(file => {
-            if (file.file_type === 'folder') {
-                listDiv.innerHTML += `
-                    <div style="background: rgba(63, 111, 107, 0.08); border-radius:6px; margin-bottom:8px; padding: 5px 0;">
-                        <div class="file-item" style="border:none;">
-                            <div style="cursor:pointer;" onclick="enterFolder('${file.file_name}')">
-                                📁 <strong>${file.file_name}</strong>
-                            </div>
-                            <button onclick="deleteFile(${file.id})" class="btn" style="background:#c0743a; padding:4px 8px;">删除</button>
-                        </div>
-                    </div>
-                `;
+        if (isGalleryMode) {
+            listDiv.style.display = 'none';
+            galleryDiv.style.display = 'grid';
+            galleryDiv.innerHTML = '';
+            
+            // 筛选出当前目录下的图片
+            const images = allFiles.filter(f => f.file_type !== 'folder' && isImage(f.file_name));
+            
+            if (images.length === 0) {
+                galleryDiv.innerHTML = '<p style="color:#888; grid-column: 1 / -1;">当前路径下没有发现壁纸/图片文件哦。</p>';
             } else {
-                // 判断文件类型，生成对应的预览按钮
-                const nameLower = file.file_name.toLowerCase();
-                let previewButton = '';
-                
-                if (nameLower.endsWith('.jpg') || nameLower.endsWith('.jpeg') || nameLower.endsWith('.png') || nameLower.endsWith('.gif') || nameLower.endsWith('.webp')) {
-                    previewButton = `<a class="file-link" style="color:#3f6f6b;" onclick="togglePreview(${file.id}, 'image', '${file.download_url}')">预览图片</a>`;
-                } else if (nameLower.endsWith('.mp3') || nameLower.endsWith('.wav') || nameLower.endsWith('.ogg') || nameLower.endsWith('.m4a')) {
-                    previewButton = `<a class="file-link" style="color:#3f6f6b;" onclick="togglePreview(${file.id}, 'audio', '${file.download_url}')">播放音乐</a>`;
-                }
-
-                listDiv.innerHTML += `
-                    <div style="background: #fff; border-radius:8px; margin-bottom:8px; padding: 5px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
-                        <div class="file-item" style="border:none;">
-                            <div class="file-info">
-                                <span>📄 <strong>${file.file_name}</strong></span>
-                                <span class="file-meta">大小: ${formatBytes(file.file_size)} | ${file.created_at}</span>
-                            </div>
-                            <div>
-                                ${previewButton}
-                                <a class="file-link" href="${file.download_url}" target="_blank" download="${file.file_name}">下载</a>
-                                <a class="file-link" style="color:#777;" onclick="moveFile(${file.id}, '${file.file_name}')">移动</a>
+                images.forEach(img => {
+                    galleryDiv.innerHTML += `
+                        <div class="gallery-item" onclick="openLightbox('${img.download_url}', '${img.file_name}')">
+                            <img src="${img.download_url}" alt="${img.file_name}">
+                            <div class="overlay">${img.file_name}</div>
+                        </div>
+                    `;
+                });
+            }
+        } else {
+            galleryDiv.style.display = 'none';
+            listDiv.style.display = 'block';
+            listDiv.innerHTML = '';
+            
+            allFiles.forEach(file => {
+                if (file.file_type === 'folder') {
+                    listDiv.innerHTML += `
+                        <div style="background: rgba(63, 111, 107, 0.08); border-radius:6px; margin-bottom:8px; padding: 5px 0;">
+                            <div class="file-item" style="border:none;">
+                                <div style="cursor:pointer;" onclick="enterFolder('${file.file_name}')">
+                                    📁 <strong>${file.file_name}</strong>
+                                </div>
                                 <button onclick="deleteFile(${file.id})" class="btn" style="background:#c0743a; padding:4px 8px;">删除</button>
                             </div>
                         </div>
-                        <div id="preview-box-${file.id}" class="preview-box"></div>
-                    </div>
-                `;
-            }
-        });
+                    `;
+                } else {
+                    let previewButton = '';
+                    if (isImage(file.file_name)) {
+                        previewButton = `<a class="file-link" style="color:#3f6f6b;" onclick="togglePreview(${file.id}, 'image', '${file.download_url}')">预览图片</a>`;
+                    } else if (isAudio(file.file_name)) {
+                        previewButton = `<a class="file-link" style="color:#3f6f6b;" onclick="togglePreview(${file.id}, 'audio', '${file.download_url}')">播放音乐</a>`;
+                    }
+
+                    listDiv.innerHTML += `
+                        <div style="background: #fff; border-radius:8px; margin-bottom:8px; padding: 5px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                            <div class="file-item" style="border:none;">
+                                <div class="file-info">
+                                    <span>📄 <strong>${file.file_name}</strong></span>
+                                    <span class="file-meta">大小: ${formatBytes(file.file_size)} | ${file.created_at}</span>
+                                </div>
+                                <div>
+                                    ${previewButton}
+                                    <a class="file-link" href="${file.download_url}" target="_blank" download="${file.file_name}">下载</a>
+                                    <a class="file-link" style="color:#777;" onclick="moveFile(${file.id}, '${file.file_name}')">移动</a>
+                                    <button onclick="deleteFile(${file.id})" class="btn" style="background:#c0743a; padding:4px 8px;">删除</button>
+                                </div>
+                            </div>
+                            <div id="preview-box-${file.id}" class="preview-box"></div>
+                        </div>
+                    `;
+                }
+            });
+        }
     }
 
-    // 🌟 2. 核心魔法：原地切换预览状态（支持图片和音乐）
+    // 🌟 辅助判断函数
+    function isImage(name) {
+        const ext = name.split('.').pop().toLowerCase();
+        return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+    }
+    function isAudio(name) {
+        const ext = name.split('.').pop().toLowerCase();
+        return ['mp3', 'wav', 'ogg', 'm4a'].includes(ext);
+    }
+
+    // 🌟 切换视图模式
+    function toggleViewMode() {
+        isGalleryMode = !isGalleryMode;
+        const btn = document.getElementById('viewToggleBtn');
+        btn.innerText = isGalleryMode ? '📄 列表模式' : '🖼️ 画廊模式';
+        btn.style.background = isGalleryMode ? '#3f6f6b' : '#c0743a';
+        renderView();
+    }
+
+    // 🌟 全屏查看壁纸逻辑
+    function openLightbox(url, name) {
+        document.getElementById('lightbox-img').src = url;
+        document.getElementById('lightbox-name').innerText = name;
+        document.getElementById('lightbox').style.display = 'flex';
+    }
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+        document.getElementById('lightbox-img').src = '';
+    }
+
     function togglePreview(id, type, url) {
         const box = document.getElementById(`preview-box-${id}`);
-        
-        // 如果当前预览开着，点击就把它收起来
-        if (box.style.display === "block") {
-            box.style.display = "none";
-            box.innerHTML = "";
-            return;
-        }
-
-        // 如果是关闭的，渲染内容并撑开
+        if (box.style.display === "block") { box.style.display = "none"; box.innerHTML = ""; return; }
         box.style.display = "block";
-        if (type === 'image') {
-            box.innerHTML = `<img src="${url}" class="preview-img" alt="图片预览">`;
-        } else if (type === 'audio') {
-            box.innerHTML = `<audio src="${url}" controls autoplay>您的浏览器不支持播放该音频</audio>`;
-        }
+        if (type === 'image') { box.innerHTML = `<img src="${url}" class="preview-img" alt="预览">`; } 
+        else if (type === 'audio') { box.innerHTML = `<audio src="${url}" controls autoplay>不支持</audio>`; }
     }
 
-    // 3. 文件夹进入与回退
-    function enterFolder(folderName) {
-        currentPath = currentPath === '/' ? `/${folderName}` : `${currentPath}/${folderName}`;
-        loadMyFiles();
-    }
-
+    function enterFolder(folderName) { currentPath = currentPath === '/' ? `/${folderName}` : `${currentPath}/${folderName}`; loadMyFiles(); }
     function goUp() {
         if (currentPath === '/') return;
-        const parts = currentPath.split('/');
-        parts.pop();
-        currentPath = parts.join('/') || '/';
-        loadMyFiles();
+        const parts = currentPath.split('/'); parts.pop();
+        currentPath = parts.join('/') || '/'; loadMyFiles();
     }
 
-    // 4. 新建文件夹
     async function createNewFolder() {
         const folderName = prompt("请输入文件夹名称：");
         if (!folderName) return;
-
-        await fetch('/api/new-folder', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: currentUser, folder_name: folderName, folder_path: currentPath })
-        });
+        await fetch('/api/new-folder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: currentUser, folder_name: folderName, folder_path: currentPath }) });
         loadMyFiles();
     }
 
-    // 5. 移动文件
     async function moveFile(fileId, fileName) {
         const targetPath = prompt(`你要把 [${fileName}] 移动到哪个路径？\n根目录填 / \n特定文件夹如：/照片`, '/');
         if (!targetPath) return;
-
-        await fetch('/api/move-file', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: fileId, username: currentUser, new_folder_path: targetPath })
-        });
+        await fetch('/api/move-file', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: fileId, username: currentUser, new_folder_path: targetPath }) });
         loadMyFiles();
     }
 
-    // 6. 修复版带进度条上传
     function uploadFile() {
         const fileInput = document.getElementById('fileInput');
         const status = document.getElementById('uploadStatus');
@@ -196,19 +249,14 @@
         const progressPercent = document.getElementById('progressPercent');
 
         if (fileInput.files.length === 0) return alert('请先选择文件！');
-        
         const file = fileInput.files[0];
-        if (file.size > 50 * 1024 * 1024) return alert('为了安全，单文件不要超过 50MB！');
+        if (file.size > 50 * 1024 * 1024) return alert('单文件不要超过 50MB！');
 
-        status.style.color = "#2f251c";
-        status.innerText = "正在读取本地文件...";
-        
+        status.style.color = "#2f251c"; status.innerText = "正在读取本地文件...";
         const reader = new FileReader();
         reader.onload = function() {
             status.innerText = "正在发送数据...";
-            progressContainer.style.display = "block";
-            progressBar.style.width = "0%"; 
-            progressPercent.innerText = "0%";
+            progressContainer.style.display = "block"; progressBar.style.width = "0%"; progressPercent.innerText = "0%";
 
             const xhr = new XMLHttpRequest();
             xhr.open('POST', '/api/upload-wallpaper', true);
@@ -217,8 +265,7 @@
             xhr.upload.onprogress = function(e) {
                 if (e.lengthComputable) {
                     const percent = Math.round((e.loaded / e.total) * 100);
-                    progressBar.style.width = percent + "%";
-                    progressPercent.innerText = percent + "%";
+                    progressBar.style.width = percent + "%"; progressPercent.innerText = percent + "%";
                 }
             };
 
@@ -227,53 +274,22 @@
                 if (xhr.status === 200) {
                     try {
                         const result = JSON.parse(xhr.responseText);
-                        if (result.success) {
-                            status.style.color = "green";
-                            status.innerText = "🎉 上传成功，已存入云端存储！";
-                            fileInput.value = ''; 
-                            loadMyFiles(); 
-                        } else {
-                            status.style.color = "red";
-                            status.innerText = result.error;
-                        }
-                    } catch(err) {
-                        status.style.color = "red";
-                        status.innerText = "解析失败，请检查数据库。";
-                    }
-                } else if (xhr.status === 413) {
-                    status.style.color = "red";
-                    status.innerText = "❌ 文件超出 Cloudflare 免费版单次传输大小限制(25MB)！";
-                } else {
-                    status.style.color = "red";
-                    status.innerText = "上传失败，状态码: " + xhr.status;
-                }
+                        if (result.success) { status.style.color = "green"; status.innerText = "🎉 上传成功！"; fileInput.value = ''; loadMyFiles(); } 
+                        else { status.style.color = "red"; status.innerText = result.error; }
+                    } catch(err) { status.style.color = "red"; status.innerText = "解析失败。"; }
+                } else if (xhr.status === 413) { status.style.color = "red"; status.innerText = "❌ 文件超出免费版单次大小限制(25MB)！"; } 
+                else { status.style.color = "red"; status.innerText = "上传失败，状态码: " + xhr.status; }
             };
 
-            xhr.onerror = function() {
-                progressContainer.style.display = "none";
-                status.style.color = "red";
-                status.innerText = "上传异常中断！";
-            };
-
-            xhr.send(JSON.stringify({
-                username: currentUser,
-                file_name: file.name,
-                file_type: file.type,
-                file_data: reader.result,
-                folder_path: currentPath
-            }));
+            xhr.onerror = function() { progressContainer.style.display = "none"; status.style.color = "red"; status.innerText = "上传异常中断！"; };
+            xhr.send(JSON.stringify({ username: currentUser, file_name: file.name, file_type: file.type, file_data: reader.result, folder_path: currentPath }));
         };
         reader.readAsDataURL(file); 
     }
 
-    // 7. 删除逻辑
     async function deleteFile(fileId) {
-        if (!confirm("⚠️ 确定要永久删除吗？文件和云端实体都将被清理！")) return;
-        await fetch('/api/delete-file', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: fileId, username: currentUser })
-        });
+        if (!confirm("⚠️ 确定要永久删除吗？文件将被清理！")) return;
+        await fetch('/api/delete-file', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: fileId, username: currentUser }) });
         loadMyFiles();
     }
 
