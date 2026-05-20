@@ -32,6 +32,13 @@
         <button class="btn" onclick="createNewFolder()" style="background: #3f6f6b;">+ 新建文件夹</button>
     </div>
     <p id="uploadStatus" style="font-size: 12px; color: #666; font-weight: bold;"></p>
+    
+    <div id="progressContainer" style="display: none; background: #e9efe9; padding: 15px; border-radius: 10px; margin: 10px 0;">
+        <div style="font-size: 12px; margin-bottom: 5px; font-weight: bold; color: #3f6f6b;">正在全速上传到云端... <span id="progressPercent">0%</span></div>
+        <div style="width: 100%; background: #ccc; height: 12px; border-radius: 6px; overflow: hidden;">
+            <div id="progressBar" style="width: 0%; background: #3f6f6b; height: 100%; transition: width 0.1s linear;"></div>
+        </div>
+    </div>
 
     <h3>我的私有文件网盘</h3>
     <div id="fileList">正在加载列表...</div>
