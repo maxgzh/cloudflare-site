@@ -135,44 +135,85 @@
         loadMyFiles();
     }
 
-    // 5. 上传大文件到 R2
+    // 5. 升级版：支持真实进度条的大文件上传逻辑
     function uploadFile() {
         const fileInput = document.getElementById('fileInput');
         const status = document.getElementById('uploadStatus');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+
         if (fileInput.files.length === 0) return alert('请先选择文件！');
         
         const file = fileInput.files[0];
-        // 🛡️ 前端硬限制：单文件最大放宽到 50MB
+        // 前端硬限制：单文件最大放宽到 50MB
         if (file.size > 50 * 1024 * 1024) return alert('为了安全，单文件不要超过 50MB！');
 
         status.style.color = "#2f251c";
-        status.innerText = "正在强力读取并加密上传中，请勿关闭页面...";
+        status.innerText = "正在读取本地文件...";
         
         const reader = new FileReader();
-        reader.onload = async function() {
-            const res = await fetch('/api/upload-wallpaper', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: currentUser,
-                    file_name: file.name,
-                    file_type: file.type,
-                    file_data: reader.result,
-                    folder_path: currentPath
-                })
-            });
+        reader.onload = function() {
+            status.innerText = "正在连接服务器并发射数据...";
+            
+            // 显示进度条，并把进度清零
+            progressContainer.style.display = "block";
+            progressBar.style.style.width = "0%";
+            progressPercent.innerText = "0%";
 
-            const result = await res.json();
-            if (result.success) {
-                status.style.color = "green";
-                status.innerText = "🎉 成功存入 R2 存储桶，安全熔断监控中！";
-                fileInput.value = ''; 
-                loadMyFiles(); 
-            } else {
+            // 🌟 核心：使用 XMLHttpRequest 开启高精度进度监视
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/upload-wallpaper', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            // 🛰️ 进度条雷达实时监听
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = percent + "%";
+                    progressPercent.innerText = percent + "%";
+                }
+            };
+
+            // 🏁 上传结束后的响应处理
+            xhr.onload = function() {
+                // 隐藏进度条
+                progressContainer.style.display = "none";
+
+                if (xhr.status === 200) {
+                    const result = JSON.parse(xhr.responseText);
+                    if (result.success) {
+                        status.style.color = "green";
+                        status.innerText = "🎉 成功存入 R2 存储桶，安全熔断监控中！";
+                        fileInput.value = ''; 
+                        loadMyFiles(); 
+                    } else {
+                        status.style.color = "red";
+                        status.innerText = result.error;
+                    }
+                } else {
+                    status.style.color = "red";
+                    status.innerText = "上传失败，服务器响应状态码: " + xhr.status;
+                }
+            };
+
+            // 出错处理
+            xhr.onerror = function() {
+                progressContainer.style.display = "none";
                 status.style.color = "red";
-                status.innerText = result.error;
-            }
+                status.innerText = "网络异常，上传中断！";
+            };
+
+            // 发射！
+            xhr.send(JSON.stringify({
+                username: currentUser,
+                file_name: file.name,
+                file_type: file.type,
+                file_data: reader.result,
+                folder_path: currentPath
+            }));
         };
+
         reader.readAsDataURL(file); 
     }
 
