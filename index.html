@@ -195,56 +195,80 @@
             setInterval(update, 1000); 
         }
 
-       async function initWeather() {
-            try {
-                // 引擎 1：优先尝试国内百度高精度定位（专治手机端基站 IP 漂移）
+       // 🌟 终极天气系统：手机硬件 GPS 定位 + 云端双保险
+        async function initWeather() {
+            // 核心渲染器：根据精准经纬度请求天气
+            async function renderWeather(lat, lon, city) {
                 try {
-                    const districtRes = await fetch('https://qifu-api.baidubce.com/ip/local/geo/v1/district');
-                    const ipData = await districtRes.json();
-                    let city = ipData.data && ipData.data.city ? ipData.data.city : "";
-                    
-                    if (city) {
+                    // 1. 如果没有现成城市名，用经纬度反查真实街道/城市（免费免密接口）
+                    if (!city) {
+                        const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=zh`);
+                        const geoData = await geoRes.json();
+                        // 优先取精确的区/市名称
+                        city = geoData.city || geoData.locality || geoData.principalSubdivision || "当前位置";
                         city = city.replace('市', '');
-                        const weatherRes = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=zh-cn`);
-                        const weatherData = await weatherRes.json();
-                        const temp = weatherData.current_condition[0].temp_C;
-                        const desc = weatherData.current_condition[0].lang_zh ? weatherData.current_condition[0].lang_zh[0].value : weatherData.current_condition[0].weatherDesc[0].value;
-                        
-                        let icon = "☀️";
-                        if (desc.includes("雨")) icon = "🌧️";
-                        else if (desc.includes("云") || desc.includes("阴")) icon = "☁️";
-                        else if (desc.includes("雪")) icon = "❄️";
-                        else if (desc.includes("雾") || desc.includes("霾")) icon = "🌫️";
+                    }
 
-                        document.getElementById('weatherIcon').innerText = icon;
-                        document.getElementById('weatherLocation').innerText = city;
-                        document.getElementById('weatherDetail').innerText = desc;
-                        document.getElementById('weatherTemp').innerText = `${temp}°C`;
-                        
-                        return; // 如果引擎 1 成功，直接结束函数，不再往下走
+                    // 2. 使用国际开源气象局直连经纬度（彻底绕过 IP 限制）
+                    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+                    const weatherData = await weatherRes.json();
+                    const temp = Math.round(weatherData.current_weather.temperature);
+                    const code = weatherData.current_weather.weathercode;
+
+                    let icon = "☀️", desc = "晴朗";
+                    if (code === 0) { icon = "☀️"; desc = "晴朗"; }
+                    else if (code >= 1 && code <= 3) { icon = "☁️"; desc = "多云"; }
+                    else if (code >= 45 && code <= 48) { icon = "🌫️"; desc = "雾霾"; }
+                    else if (code >= 51 && code <= 67) { icon = "🌧️"; desc = "降雨"; }
+                    else if (code >= 71 && code <= 77) { icon = "❄️"; desc = "降雪"; }
+                    else if (code >= 95) { icon = "⛈️"; desc = "雷阵雨"; }
+
+                    document.getElementById('weatherIcon').innerText = icon;
+                    document.getElementById('weatherLocation').innerText = city;
+                    document.getElementById('weatherDetail').innerText = desc;
+                    document.getElementById('weatherTemp').innerText = `${temp}°C`;
+                } catch (err) {
+                    console.error("GPS 天气获取失败，启动兜底", err);
+                    fallbackWeather();
+                }
+            }
+
+            // 兜底方案：如果用户拒绝授权定位，或者在电脑上没 GPS，走 Cloudflare 后端 IP 定位
+            async function fallbackWeather() {
+                try {
+                    const res = await fetch('/api/weather');
+                    const data = await res.json();
+                    if (data.success) {
+                        document.getElementById('weatherIcon').innerText = data.icon;
+                        document.getElementById('weatherLocation').innerText = data.city;
+                        document.getElementById('weatherDetail').innerText = data.desc;
+                        document.getElementById('weatherTemp').innerText = `${data.temp}°C`;
                     }
                 } catch (e) {
-                    console.log("国内高精度定位被拦截，自动切换至云端兜底引擎...");
+                    document.getElementById('weatherIcon').innerText = "☁️";
+                    document.getElementById('weatherLocation').innerText = "地球";
+                    document.getElementById('weatherDetail').innerText = "无信号";
+                    document.getElementById('weatherTemp').innerText = "--°C";
                 }
+            }
 
-                // 引擎 2：如果上面的代码被拦截（比如开着 VPN），瞬间无缝切换到你自己的 Cloudflare 后端
-                const res = await fetch('/api/weather');
-                const data = await res.json();
-                
-                if (data.success) {
-                    document.getElementById('weatherIcon').innerText = data.icon;
-                    document.getElementById('weatherLocation').innerText = data.city;
-                    document.getElementById('weatherDetail').innerText = data.desc;
-                    document.getElementById('weatherTemp').innerText = `${data.temp}°C`;
-                } else {
-                    throw new Error("后端数据异常");
-                }
-            } catch (error) {
-                console.warn("天气加载彻底失败:", error);
-                document.getElementById('weatherIcon').innerText = "☁️";
-                document.getElementById('weatherLocation').innerText = "地球";
-                document.getElementById('weatherDetail').innerText = "无信号";
-                document.getElementById('weatherTemp').innerText = "--°C";
+            // 🌟 核心触发：主动呼叫浏览器底层 GPS 接口
+            if (navigator.geolocation) {
+                document.getElementById('weatherLocation').innerText = "GPS定位中";
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // 成功拿到极其精准的物理坐标
+                        renderWeather(position.coords.latitude, position.coords.longitude, "");
+                    },
+                    (error) => {
+                        // 用户拒绝了位置权限，或者超时
+                        console.log("GPS权限被拒或不可用，切换回后端 IP 定位");
+                        fallbackWeather();
+                    },
+                    { timeout: 6000, enableHighAccuracy: true } // 开启高精度模式
+                );
+            } else {
+                fallbackWeather();
             }
         }
 
