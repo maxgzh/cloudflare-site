@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>能量中转站 - 登录</title>
     <style>
-        /* ==============================
-           1. 全局基础样式 (移动端优先)
-           ============================== */
         :root { --sand: #f4ecdf; --coal: #2f251c; --soft-line: rgba(31, 26, 20, 0.15); --success: #3f6f6b; --orange: #c0743a;}
         
         body { margin: 0; padding: 0; min-height: 100vh; background: var(--sand); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; position: relative; overflow-x: hidden; color: var(--coal); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 12vh; box-sizing: border-box;}
@@ -15,15 +12,12 @@
         body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(circle at 12% 10%, #f9efe0 0%, transparent 55%), radial-gradient(circle at 80% 18%, #f4d9b0 0%, transparent 60%), radial-gradient(circle at 70% 82%, #e9efe9 0%, transparent 55%), linear-gradient(160deg, #f6efe2 10%, #efe1cb 45%, #f4ecdf 100%); z-index: -2; }
         body::after { content: ""; position: fixed; inset: 0; background-image: repeating-linear-gradient(100deg, rgba(31, 26, 20, 0.04), rgba(31, 26, 20, 0.04) 1px, transparent 1px, transparent 12px), repeating-linear-gradient(10deg, rgba(31, 26, 20, 0.03), rgba(31, 26, 20, 0.03) 1px, transparent 1px, transparent 10px); opacity: 0.55; z-index: -1; pointer-events: none; }
         
-        /* 🌟 中心布局容器 */
         .center-wrapper { display: flex; flex-direction: column; align-items: center; gap: 20px; z-index: 10; width: 100%; max-width: 360px; padding: 0 20px; box-sizing: border-box;}
 
-        /* 独立时钟 */
         .clock-widget { text-align: center; font-variant-numeric: tabular-nums; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(8px); padding: 20px 30px; border-radius: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); width: 100%; box-sizing: border-box;}
         .clock-time { font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; line-height: 1; margin-bottom: 5px; }
         .clock-date { font-size: 0.95rem; font-weight: 600; opacity: 0.8; letter-spacing: 0.5px; }
 
-        /* 登录卡片 */
         .auth-card { background: rgba(255, 255, 255, 0.85); padding: 30px 20px; border-radius: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.04); border: 1px solid var(--soft-line); width: 100%; box-sizing: border-box; backdrop-filter: blur(10px); }
         .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--soft-line); }
         .tab { flex: 1; text-align: center; padding: 8px; cursor: pointer; font-weight: bold; color: #888; font-size: 0.95rem;}
@@ -35,13 +29,11 @@
         .btn:hover, .btn:active { opacity: 0.9;}
         #msg { margin-top: 15px; font-size: 0.8rem; text-align: center; color: var(--orange); font-weight: bold; min-height: 18px; line-height: 1.4;}
 
-        /* 天气组件 */
         .weather-box { position: absolute; top: 15px; left: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20;}
         .weather-city { font-weight: bold; color: var(--orange); font-size: 12px;}
         .weather-detail { font-size: 11px; color: #666; margin-top: 1px;}
         .weather-temp { font-size: 16px; font-weight: bold; color: var(--coal); }
 
-        /* 音乐组件 */
         .music-box { position: absolute; top: 15px; right: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20; cursor: pointer; user-select: none;}
         .music-status { font-weight: bold; color: #777; font-size: 12px;}
         .music-bars { display: flex; align-items: flex-end; gap: 2.5px; height: 11px;}
@@ -53,41 +45,31 @@
         .music-bars.playing .bar:nth-child(4) { animation-duration: 1.7s; }
         @keyframes bounceBars { 0% { height: 3px; } 100% { height: 11px; } }
 
-        /* 独立壁纸库卡片 */
         #wallpaper-widget { width: 100%; background: rgba(255,255,255,0.75); padding: 10px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.03); backdrop-filter: blur(6px); text-align: center; font-size: 12px; border: 1px solid #eee; transition: all 0.3s; box-sizing: border-box; margin-bottom: 30px;}
         #wallpaper-widget p { margin: 0 0 6px 0; color: #666; font-weight: bold; font-size: 13px;}
         #today-img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.04); background: #eee;}
         #wallpaper-widget a { display: block; margin-top: 8px; color: #007bff; text-decoration: none; font-weight: bold; font-size: 13px;}
 
-
-        /* ==============================
-           2. 桌面端 响应式适配 (>=768px)
-           ============================== */
         @media (min-width: 768px) {
             body { justify-content: center; padding-top: 0; }
             .center-wrapper { padding: 0; gap: 30px;}
-            
             .clock-widget { border-radius: 0; background: none; backdrop-filter: none; box-shadow: none; padding: 0; width: auto;}
             .clock-time { font-size: 3.2rem;}
             .clock-date { font-size: 1rem;}
-
             .auth-card { padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05);}
             .tab { font-size: 1rem; padding: 10px;}
             .input-group label { font-size: 0.9rem;}
             .input-group input { border-radius: 8px; font-size: 1rem; padding: 12px;}
             .btn { font-size: 1rem; padding: 14px; border-radius: 8px;}
-
             .weather-box { top: 25px; left: 25px; padding: 12px 20px; border-radius: 16px; gap: 12px;}
             .weather-city { font-size: 14px;}
             .weather-detail { font-size: 12px;}
             .weather-temp { font-size: 22px; }
-
             .music-box { top: 25px; right: 25px; padding: 10px 18px; border-radius: 16px; gap: 12px;}
             .music-status { font-size: 13px;}
             .music-bars { gap: 3px; height: 14px; width: 22px;}
             .music-bars .bar { width: 3px; border-radius: 2px;}
             @keyframes bounceBars { 0% { height: 4px; } 100% { height: 14px; } }
-
             #wallpaper-widget { position: fixed; bottom: 25px; right: 25px; width: 220px; padding: 12px; margin: 0; text-align: center; }
             #today-img { height: 130px;}
             #wallpaper-widget p { font-size: 14px;}
@@ -119,7 +101,6 @@
     </div>
 
     <div class="center-wrapper">
-        
         <div class="clock-widget">
             <div class="clock-time" id="clock-time">00:00:00</div>
             <div class="clock-date" id="clock-date">读取中...</div>
@@ -165,8 +146,7 @@
                     musicStatus.innerText = '正在播放';
                     musicStatus.style.color = '#3f6f6b';
                 }).catch(err => {
-                    console.error("音乐播放失败:", err);
-                    musicStatus.innerText = '播放异常(未找到文件)';
+                    musicStatus.innerText = '播放异常(找不到文件)';
                     musicStatus.style.color = 'red';
                 });
             } else {
@@ -187,7 +167,6 @@
                 const h = String(now.getHours()).padStart(2, '0');
                 const min = String(now.getMinutes()).padStart(2, '0');
                 const s = String(now.getSeconds()).padStart(2, '0');
-                
                 timeEl.innerText = `${h}:${min}:${s}`;
                 dateEl.innerText = `${now.getFullYear()}年${String(now.getMonth() + 1).padStart(2, '0')}月${String(now.getDate()).padStart(2, '0')}日 ${weekdays[now.getDay()]}`;
             }
@@ -195,21 +174,15 @@
             setInterval(update, 1000); 
         }
 
-       // 🌟 终极天气系统：手机硬件 GPS 定位 + 云端双保险
         async function initWeather() {
-            // 核心渲染器：根据精准经纬度请求天气
             async function renderWeather(lat, lon, city) {
                 try {
-                    // 1. 如果没有现成城市名，用经纬度反查真实街道/城市（免费免密接口）
                     if (!city) {
                         const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=zh`);
                         const geoData = await geoRes.json();
-                        // 优先取精确的区/市名称
                         city = geoData.city || geoData.locality || geoData.principalSubdivision || "当前位置";
                         city = city.replace('市', '');
                     }
-
-                    // 2. 使用国际开源气象局直连经纬度（彻底绕过 IP 限制）
                     const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
                     const weatherData = await weatherRes.json();
                     const temp = Math.round(weatherData.current_weather.temperature);
@@ -227,13 +200,9 @@
                     document.getElementById('weatherLocation').innerText = city;
                     document.getElementById('weatherDetail').innerText = desc;
                     document.getElementById('weatherTemp').innerText = `${temp}°C`;
-                } catch (err) {
-                    console.error("GPS 天气获取失败，启动兜底", err);
-                    fallbackWeather();
-                }
+                } catch (err) { fallbackWeather(); }
             }
 
-            // 兜底方案：如果用户拒绝授权定位，或者在电脑上没 GPS，走 Cloudflare 后端 IP 定位
             async function fallbackWeather() {
                 try {
                     const res = await fetch('/api/weather');
@@ -252,27 +221,20 @@
                 }
             }
 
-            // 🌟 核心触发：主动呼叫浏览器底层 GPS 接口
             if (navigator.geolocation) {
-                document.getElementById('weatherLocation').innerText = "GPS定位中";
                 navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        // 成功拿到极其精准的物理坐标
-                        renderWeather(position.coords.latitude, position.coords.longitude, "");
-                    },
-                    (error) => {
-                        // 用户拒绝了位置权限，或者超时
-                        console.log("GPS权限被拒或不可用，切换回后端 IP 定位");
-                        fallbackWeather();
-                    },
-                    { timeout: 6000, enableHighAccuracy: true } // 开启高精度模式
+                    (position) => { renderWeather(position.coords.latitude, position.coords.longitude, ""); },
+                    (error) => { fallbackWeather(); },
+                    { timeout: 6000, enableHighAccuracy: true }
                 );
-            } else {
-                fallbackWeather();
-            }
+            } else { fallbackWeather(); }
         }
 
         window.onload = function() {
+            // 🌟 进站立刻执行无障碍访客登记
+            const currentUser = localStorage.getItem('currentUser') || '游客';
+            fetch('/api/record-visitor', { method: 'POST', body: currentUser }).catch(err => console.log(err));
+
             startClock();  
             initWeather(); 
 
@@ -301,14 +263,13 @@
             const msg = document.getElementById('msg');
             msg.style.color = 'var(--orange)';
             if(!username || !password) return msg.innerText = '账号和密码不能为空！';
-            msg.style.color = '#777'; msg.innerText = '正在提交云端数据库...';
             const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
             const data = await res.json();
             if (res.ok) {
                 msg.style.color = 'var(--success)'; msg.innerText = '🎉 注册成功！即将自动跳转登录。';
                 document.getElementById('regUser').value = ''; document.getElementById('regPwd').value = '';
                 setTimeout(() => { switchTab('login'); }, 1500);
-            } else { msg.style.color = 'var(--orange)'; msg.innerText = data.error || '注册失败'; }
+            } else { msg.innerText = data.error || '注册失败'; }
         }
 
         async function doLogin() {
@@ -317,14 +278,13 @@
             const msg = document.getElementById('msg');
             msg.style.color = 'var(--orange)';
             if(!username || !password) return msg.innerText = '账号和密码不能为空！';
-            msg.style.color = '#777'; msg.innerText = '正在验证安全凭证...';
             const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
             const data = await res.json();
             if (res.ok) {
                 msg.style.color = 'var(--success)'; msg.innerText = '✅ 验证通过！正在进入控制台...';
                 localStorage.setItem('currentUser', username);
                 setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
-            } else { msg.style.color = 'var(--orange)'; msg.innerText = data.error || '登录失败'; }
+            } else { msg.innerText = data.error || '登录失败'; }
         }
     </script>
 </body>
