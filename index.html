@@ -1,3 +1,10 @@
+没问题！自己拼凑代码确实容易漏掉闭合的括号或者标签。
+
+这是已经**彻底剥离了后端依赖**，直接在浏览器里完成“直连获取天气”和“直连渲染壁纸”的最终完整版 `index.html`。
+
+请将你现有的 `index.html` 内容**全部清空**，把下面这段代码原封不动地粘贴进去，然后 Push 到 GitHub 即可！
+
+```html
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -47,7 +54,7 @@
             position: fixed;
             bottom: 25px;
             right: 25px;
-            width: 220px; /* 从原先的 150px 放大 */
+            width: 220px;
             background: rgba(255,255,255,0.85);
             padding: 12px;
             border-radius: 16px;
@@ -68,8 +75,8 @@
     <div class="weather-box" id="weatherBox">
         <div style="font-size: 26px;" id="weatherIcon">🔍</div>
         <div>
-            <div id="weatherLocation" class="weather-city">正在定位...</div>
-            <div style="font-size: 12px; color: #666; margin-top: 2px;" id="weatherDetail">获取天气中</div>
+            <div id="weatherLocation" class="weather-city">定位中...</div>
+            <div style="font-size: 12px; color: #666; margin-top: 2px;" id="weatherDetail">正在同步天气</div>
         </div>
         <div id="weatherTemp" class="weather-temp">--°C</div>
     </div>
@@ -97,53 +104,54 @@
     <div id="wallpaper-widget">
         <p style="margin: 0 0 8px 0; color: #555; font-weight: bold;">今日必应壁纸</p>
         <img id="today-img" src="" onclick="window.open(this.src)">
-        <a href="dashboard.html" style="display: block; margin-top: 10px; color: #c0743a; text-decoration: none; font-weight: bold;">查看更多壁纸 &raquo;</a>
+        <a href="dashboard.html" style="display: block; margin-top: 10px; color: #c0743a; text-decoration: none; font-weight: bold;">进入我的云盘 &raquo;</a>
     </div>
 
     <script>
-        // 🌟 初始化天气（调用后端的 /api/weather 接口防跨域）
+        // 🌟 纯前端高可用天气接口（利用百度 IP 库 + 浏览器直连天气）
         async function initWeather() {
             try {
-                const res = await fetch('/api/weather');
-                const data = await res.json();
+                // 第一步：使用国内极速高可用接口定位城市
+                const ipRes = await fetch('https://qifu-api.baidubce.com/ip/local/geo/v1/district');
+                const ipData = await ipRes.json();
+                let city = (ipData.data && ipData.data.city) ? ipData.data.city : "北京市";
+                city = city.replace('市', ''); // 去掉“市”字，提高天气识别率
+
+                // 第二步：利用用户自己的网络直连天气服务，完美绕过 Cloudflare 封禁
+                const weatherRes = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`);
+                const weatherData = await weatherRes.json();
                 
                 let icon = "☀️";
-                const desc = data.desc.toLowerCase();
+                // 兼容中英文的天气描述字段
+                const desc = weatherData.current_condition[0].lang_zh ? weatherData.current_condition[0].lang_zh[0].value : weatherData.current_condition[0].weatherDesc[0].value;
+                const temp = weatherData.current_condition[0].temp_C;
+
                 if (desc.includes("雨")) icon = "🌧️";
                 else if (desc.includes("云") || desc.includes("阴")) icon = "☁️";
                 else if (desc.includes("雪")) icon = "❄️";
                 else if (desc.includes("雾") || desc.includes("霾")) icon = "🌫️";
 
                 document.getElementById('weatherIcon').innerText = icon;
-                document.getElementById('weatherLocation').innerText = data.city;
-                document.getElementById('weatherDetail').innerText = data.desc;
-                document.getElementById('weatherTemp').innerText = `${data.temp}°C`;
+                document.getElementById('weatherLocation').innerText = city;
+                document.getElementById('weatherDetail').innerText = desc;
+                document.getElementById('weatherTemp').innerText = `${temp}°C`;
 
             } catch (error) {
                 console.error("天气获取失败:", error);
                 document.getElementById('weatherIcon').innerText = "🌤️";
-                document.getElementById('weatherLocation').innerText = "中转站";
-                document.getElementById('weatherDetail').innerText = "网络同步中";
+                document.getElementById('weatherLocation').innerText = "定位中";
+                document.getElementById('weatherDetail').innerText = "网络异常";
                 document.getElementById('weatherTemp').innerText = "--°C";
             }
         }
 
-        // 页面加载时执行
+        // 页面加载初始化
         window.onload = function() {
             initWeather();
-            // 加载壁纸
-            fetch('/api/get-wallpapers?type=latest')
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.img_url) {
-                        document.getElementById('today-img').src = data.img_url;
-                    } else {
-                        // 如果后端没返回，用一个原生的 Bing API 兜底
-                        document.getElementById('today-img').src = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN";
-                    }
-                }).catch(() => {
-                    document.getElementById('today-img').src = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN";
-                });
+            
+            // 🌟 绕过被网盘占用的后端接口，直接把必应高清壁纸强塞进图片里！
+            const bingUrl = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN";
+            document.getElementById('today-img').src = bingUrl;
         };
 
         // 选项卡切换逻辑
@@ -164,6 +172,11 @@
             const password = document.getElementById('regPwd').value;
             const msg = document.getElementById('msg');
             msg.style.color = '#c0743a';
+            
+            if(!username || !password) {
+                msg.innerText = '账号和密码不能为空！';
+                return;
+            }
 
             const res = await fetch('/api/register', {
                 method: 'POST',
@@ -175,7 +188,7 @@
                 msg.style.color = '#3f6f6b';
                 msg.innerText = '注册成功！已实时写入云端数据库。';
                 document.getElementById('regUser').value = ''; document.getElementById('regPwd').value = '';
-                // 注册成功后，延迟一秒自动跳回登录页面
+                // 注册成功后自动跳回登录
                 setTimeout(() => { switchTab('login'); }, 1500);
             } else {
                 msg.innerText = data.error || '注册失败';
@@ -188,6 +201,11 @@
             const password = document.getElementById('loginPwd').value;
             const msg = document.getElementById('msg');
             msg.style.color = '#c0743a';
+            
+            if(!username || !password) {
+                msg.innerText = '账号和密码不能为空！';
+                return;
+            }
 
             const res = await fetch('/api/login', {
                 method: 'POST',
@@ -206,3 +224,5 @@
     </script>
 </body>
 </html>
+
+```
