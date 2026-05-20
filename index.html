@@ -102,47 +102,28 @@
 
     <script>
         // 🌟 国际标准高可用天气接口（无惧任何网络封锁）
+        // 🌟 向自己无敌的后端请求天气，告别一切前端跨域和插件拦截！
         async function initWeather() {
             try {
-                // 第一步：使用全球 IP 定位，获取经纬度
-                const ipRes = await fetch('https://ipapi.co/json/');
-                const ipData = await ipRes.json();
-                const city = ipData.city || ipData.region || "未知位置";
-                const lat = ipData.latitude;
-                const lon = ipData.longitude;
-
-                // 第二步：使用瑞士 Open-Meteo 气象组织接口查询天气
-                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-                const weatherData = await weatherRes.json();
+                const res = await fetch('/api/weather');
+                const data = await res.json();
                 
-                const temp = Math.round(weatherData.current_weather.temperature);
-                const code = weatherData.current_weather.weathercode;
-                
-                let icon = "☀️";
-                let desc = "晴朗";
-                
-                // WMO 国际气象状态码解析
-                if (code === 0) { icon = "☀️"; desc = "晴朗"; }
-                else if (code >= 1 && code <= 3) { icon = "☁️"; desc = "多云"; }
-                else if (code >= 45 && code <= 48) { icon = "🌫️"; desc = "雾霾"; }
-                else if (code >= 51 && code <= 67) { icon = "🌧️"; desc = "降雨"; }
-                else if (code >= 71 && code <= 77) { icon = "❄️"; desc = "降雪"; }
-                else if (code >= 95) { icon = "⛈️"; desc = "雷阵雨"; }
-
-                document.getElementById('weatherIcon').innerText = icon;
-                document.getElementById('weatherLocation').innerText = city;
-                document.getElementById('weatherDetail').innerText = desc;
-                document.getElementById('weatherTemp').innerText = `${temp}°C`;
-
+                if (data.success) {
+                    document.getElementById('weatherIcon').innerText = data.icon;
+                    document.getElementById('weatherLocation').innerText = data.city;
+                    document.getElementById('weatherDetail').innerText = data.desc;
+                    document.getElementById('weatherTemp').innerText = `${data.temp}°C`;
+                } else {
+                    throw new Error("后端数据异常");
+                }
             } catch (error) {
-                console.error("天气获取失败:", error);
-                document.getElementById('weatherIcon').innerText = "🌍";
-                document.getElementById('weatherLocation').innerText = "云端";
-                document.getElementById('weatherDetail').innerText = "连接中";
+                console.warn("天气加载失败:", error);
+                document.getElementById('weatherIcon').innerText = "☁️";
+                document.getElementById('weatherLocation').innerText = "地球";
+                document.getElementById('weatherDetail').innerText = "无信号";
                 document.getElementById('weatherTemp').innerText = "--°C";
             }
         }
-
         // 页面加载初始化
         window.onload = function() {
             initWeather();
