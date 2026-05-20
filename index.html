@@ -195,9 +195,39 @@
             setInterval(update, 1000); 
         }
 
-        // 🌟 换回稳定的：向自己的 Cloudflare 后端请求数据！绝对不报错！
-        async function initWeather() {
+       async function initWeather() {
             try {
+                // 引擎 1：优先尝试国内百度高精度定位（专治手机端基站 IP 漂移）
+                try {
+                    const districtRes = await fetch('https://qifu-api.baidubce.com/ip/local/geo/v1/district');
+                    const ipData = await districtRes.json();
+                    let city = ipData.data && ipData.data.city ? ipData.data.city : "";
+                    
+                    if (city) {
+                        city = city.replace('市', '');
+                        const weatherRes = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=zh-cn`);
+                        const weatherData = await weatherRes.json();
+                        const temp = weatherData.current_condition[0].temp_C;
+                        const desc = weatherData.current_condition[0].lang_zh ? weatherData.current_condition[0].lang_zh[0].value : weatherData.current_condition[0].weatherDesc[0].value;
+                        
+                        let icon = "☀️";
+                        if (desc.includes("雨")) icon = "🌧️";
+                        else if (desc.includes("云") || desc.includes("阴")) icon = "☁️";
+                        else if (desc.includes("雪")) icon = "❄️";
+                        else if (desc.includes("雾") || desc.includes("霾")) icon = "🌫️";
+
+                        document.getElementById('weatherIcon').innerText = icon;
+                        document.getElementById('weatherLocation').innerText = city;
+                        document.getElementById('weatherDetail').innerText = desc;
+                        document.getElementById('weatherTemp').innerText = `${temp}°C`;
+                        
+                        return; // 如果引擎 1 成功，直接结束函数，不再往下走
+                    }
+                } catch (e) {
+                    console.log("国内高精度定位被拦截，自动切换至云端兜底引擎...");
+                }
+
+                // 引擎 2：如果上面的代码被拦截（比如开着 VPN），瞬间无缝切换到你自己的 Cloudflare 后端
                 const res = await fetch('/api/weather');
                 const data = await res.json();
                 
@@ -210,7 +240,7 @@
                     throw new Error("后端数据异常");
                 }
             } catch (error) {
-                console.warn("天气加载失败:", error);
+                console.warn("天气加载彻底失败:", error);
                 document.getElementById('weatherIcon').innerText = "☁️";
                 document.getElementById('weatherLocation').innerText = "地球";
                 document.getElementById('weatherDetail').innerText = "无信号";
