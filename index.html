@@ -10,13 +10,12 @@
            ============================== */
         :root { --sand: #f4ecdf; --coal: #2f251c; --soft-line: rgba(31, 26, 20, 0.15); --success: #3f6f6b; --orange: #c0743a;}
         
-        /* 默认移动端：从顶部偏下开始排列 */
         body { margin: 0; padding: 0; min-height: 100vh; background: var(--sand); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; position: relative; overflow-x: hidden; color: var(--coal); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 12vh; box-sizing: border-box;}
         
         body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(circle at 12% 10%, #f9efe0 0%, transparent 55%), radial-gradient(circle at 80% 18%, #f4d9b0 0%, transparent 60%), radial-gradient(circle at 70% 82%, #e9efe9 0%, transparent 55%), linear-gradient(160deg, #f6efe2 10%, #efe1cb 45%, #f4ecdf 100%); z-index: -2; }
         body::after { content: ""; position: fixed; inset: 0; background-image: repeating-linear-gradient(100deg, rgba(31, 26, 20, 0.04), rgba(31, 26, 20, 0.04) 1px, transparent 1px, transparent 12px), repeating-linear-gradient(10deg, rgba(31, 26, 20, 0.03), rgba(31, 26, 20, 0.03) 1px, transparent 1px, transparent 10px); opacity: 0.55; z-index: -1; pointer-events: none; }
         
-        /* 🌟 中心布局容器 - 流式布局防遮挡 */
+        /* 🌟 中心布局容器 */
         .center-wrapper { display: flex; flex-direction: column; align-items: center; gap: 20px; z-index: 10; width: 100%; max-width: 360px; padding: 0 20px; box-sizing: border-box;}
 
         /* 独立时钟 */
@@ -36,13 +35,14 @@
         .btn:hover, .btn:active { opacity: 0.9;}
         #msg { margin-top: 15px; font-size: 0.8rem; text-align: center; color: var(--orange); font-weight: bold; min-height: 18px; line-height: 1.4;}
 
-        /* 天气组件 (移动端缩小归位) */
-        .weather-box { position: absolute; top: 15px; left: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20; font-size: 11px;}
+        /* 天气组件 */
+        .weather-box { position: absolute; top: 15px; left: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20;}
         .weather-city { font-weight: bold; color: var(--orange); font-size: 12px;}
+        .weather-detail { font-size: 11px; color: #666; margin-top: 1px;}
         .weather-temp { font-size: 16px; font-weight: bold; color: var(--coal); }
 
-        /* 音乐组件 (移动端缩小归位) */
-        .music-box { position: absolute; top: 15px; right: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20; font-size: 12px; cursor: pointer; user-select: none;}
+        /* 音乐组件 */
+        .music-box { position: absolute; top: 15px; right: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20; cursor: pointer; user-select: none;}
         .music-status { font-weight: bold; color: #777; font-size: 12px;}
         .music-bars { display: flex; align-items: flex-end; gap: 2.5px; height: 11px;}
         .music-bars .bar { width: 2.5px; height: 3px; background-color: var(--coal); border-radius: 1px;}
@@ -53,7 +53,7 @@
         .music-bars.playing .bar:nth-child(4) { animation-duration: 1.7s; }
         @keyframes bounceBars { 0% { height: 3px; } 100% { height: 11px; } }
 
-        /* 独立壁纸库卡片 (移动端融入流式布局) */
+        /* 独立壁纸库卡片 */
         #wallpaper-widget { width: 100%; background: rgba(255,255,255,0.75); padding: 10px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.03); backdrop-filter: blur(6px); text-align: center; font-size: 12px; border: 1px solid #eee; transition: all 0.3s; box-sizing: border-box; margin-bottom: 30px;}
         #wallpaper-widget p { margin: 0 0 6px 0; color: #666; font-weight: bold; font-size: 13px;}
         #today-img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.04); background: #eee;}
@@ -64,36 +64,31 @@
            2. 桌面端 响应式适配 (>=768px)
            ============================== */
         @media (min-width: 768px) {
-            /* 桌面端：彻底垂直居中 */
             body { justify-content: center; padding-top: 0; }
             .center-wrapper { padding: 0; gap: 30px;}
             
-            /* 桌面端：极简悬浮时钟，去除背景卡片 */
             .clock-widget { border-radius: 0; background: none; backdrop-filter: none; box-shadow: none; padding: 0; width: auto;}
             .clock-time { font-size: 3.2rem;}
             .clock-date { font-size: 1rem;}
 
-            /* 桌面端：卡片放大 */
             .auth-card { padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05);}
             .tab { font-size: 1rem; padding: 10px;}
             .input-group label { font-size: 0.9rem;}
             .input-group input { border-radius: 8px; font-size: 1rem; padding: 12px;}
             .btn { font-size: 1rem; padding: 14px; border-radius: 8px;}
 
-            /* 桌面端：天气组件放大复位 */
-            .weather-box { top: 25px; left: 25px; padding: 12px 20px; border-radius: 16px; font-size: 14px;}
-            .weather-city { font-size: 15px;}
-            .weather-temp { font-size: 20px; }
+            .weather-box { top: 25px; left: 25px; padding: 12px 20px; border-radius: 16px; gap: 12px;}
+            .weather-city { font-size: 14px;}
+            .weather-detail { font-size: 12px;}
+            .weather-temp { font-size: 22px; }
 
-            /* 桌面端：音乐组件放大复位 */
-            .music-box { top: 25px; right: 25px; padding: 10px 18px; border-radius: 16px; gap: 14px;}
-            .music-status { font-size: 14px;}
+            .music-box { top: 25px; right: 25px; padding: 10px 18px; border-radius: 16px; gap: 12px;}
+            .music-status { font-size: 13px;}
             .music-bars { gap: 3px; height: 14px; width: 22px;}
             .music-bars .bar { width: 3px; border-radius: 2px;}
             @keyframes bounceBars { 0% { height: 4px; } 100% { height: 14px; } }
 
-            /* 桌面端：壁纸组件剥离中心布局，固定到右下角 */
-            #wallpaper-widget { position: fixed; bottom: 25px; right: 25px; width: 220px; padding: 12px; margin: 0; font-size: 13px; text-align: center; }
+            #wallpaper-widget { position: fixed; bottom: 25px; right: 25px; width: 220px; padding: 12px; margin: 0; text-align: center; }
             #today-img { height: 130px;}
             #wallpaper-widget p { font-size: 14px;}
             #wallpaper-widget:hover { transform: translateY(-5px) scale(1.02); }
@@ -105,11 +100,12 @@
     <audio id="bgm-player" loop preload="auto" src="bgm.mp3"></audio>
 
     <div class="weather-box" id="weatherBox">
-        <div style="font-size: 18px;" id="weatherIcon">🌍</div>
-        <div>
+        <div style="font-size: 22px;" id="weatherIcon">🌍</div>
+        <div style="display: flex; flex-direction: column;">
             <div id="weatherLocation" class="weather-city">定位中..</div>
-            <div id="weatherTemp" class="weather-temp">--°C</div>
+            <div id="weatherDetail" class="weather-detail">正在同步</div>
         </div>
+        <div id="weatherTemp" class="weather-temp" style="margin-left: 5px;">--°C</div>
     </div>
 
     <div class="music-box" id="musicBox" onclick="toggleMusic(event)">
@@ -170,7 +166,7 @@
                     musicStatus.style.color = '#3f6f6b';
                 }).catch(err => {
                     console.error("音乐播放失败:", err);
-                    musicStatus.innerText = '播放异常(找不到文件)';
+                    musicStatus.innerText = '播放异常(未找到文件)';
                     musicStatus.style.color = 'red';
                 });
             } else {
@@ -199,31 +195,25 @@
             setInterval(update, 1000); 
         }
 
+        // 🌟 换回稳定的：向自己的 Cloudflare 后端请求数据！绝对不报错！
         async function initWeather() {
             try {
-                // 🌟 修复了这里的致命语法错误
-                const districtRes = await fetch('https://qifu-api.baidubce.com/ip/local/geo/v1/district');
-                const ipData = await districtRes.json();
-                let city = ipData.data && ipData.data.city ? ipData.data.city : "台北市";
-                city = city.replace('市', '');
-
-                const weatherRes = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=zh-cn`);
-                const weatherData = await weatherRes.json();
-                const temp = weatherData.current_condition[0].temp_C;
-                const desc = weatherData.current_condition[0].lang_zh ? weatherData.current_condition[0].lang_zh[0].value : weatherData.current_condition[0].weatherDesc[0].value;
+                const res = await fetch('/api/weather');
+                const data = await res.json();
                 
-                let icon = "☀️";
-                if (desc.includes("雨")) icon = "🌧️";
-                else if (desc.includes("云") || desc.includes("阴")) icon = "☁️";
-                else if (desc.includes("雪")) icon = "❄️";
-                else if (desc.includes("雾") || desc.includes("霾")) icon = "🌫️";
-
-                document.getElementById('weatherIcon').innerText = icon;
-                document.getElementById('weatherLocation').innerText = city;
-                document.getElementById('weatherTemp').innerText = `${temp}°C`;
+                if (data.success) {
+                    document.getElementById('weatherIcon').innerText = data.icon;
+                    document.getElementById('weatherLocation').innerText = data.city;
+                    document.getElementById('weatherDetail').innerText = data.desc;
+                    document.getElementById('weatherTemp').innerText = `${data.temp}°C`;
+                } else {
+                    throw new Error("后端数据异常");
+                }
             } catch (error) {
+                console.warn("天气加载失败:", error);
                 document.getElementById('weatherIcon').innerText = "☁️";
                 document.getElementById('weatherLocation').innerText = "地球";
+                document.getElementById('weatherDetail').innerText = "无信号";
                 document.getElementById('weatherTemp').innerText = "--°C";
             }
         }
