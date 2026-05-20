@@ -101,39 +101,37 @@
     </div>
 
     <script>
-        // 🌟 纯前端高可用天气接口（利用百度 IP 库 + 浏览器直连天气）
+        // 🌟 纯前端免跨域天气接口（专为前端开发设计，绝不拦截）
         async function initWeather() {
             try {
-                // 第一步：使用国内极速高可用接口定位城市
-                const ipRes = await fetch('https://qifu-api.baidubce.com/ip/local/geo/v1/district');
-                const ipData = await ipRes.json();
-                let city = (ipData.data && ipData.data.city) ? ipData.data.city : "北京市";
-                city = city.replace('市', ''); // 去掉“市”字，提高天气识别率
-
-                // 第二步：利用用户自己的网络直连天气服务，完美绕过 Cloudflare 封禁
-                const weatherRes = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`);
-                const weatherData = await weatherRes.json();
+                // 这个接口会自动识别你的 IP 并返回对应城市的天气，且允许跨域！
+                const res = await fetch('https://api.vvhan.com/api/weather');
+                const data = await res.json();
                 
-                let icon = "☀️";
-                // 兼容中英文的天气描述字段
-                const desc = weatherData.current_condition[0].lang_zh ? weatherData.current_condition[0].lang_zh[0].value : weatherData.current_condition[0].weatherDesc[0].value;
-                const temp = weatherData.current_condition[0].temp_C;
+                if (data && data.success) {
+                    let icon = "☀️";
+                    const desc = data.data.type; // 比如 "多云", "小雨"
+                    
+                    // 提取最高温度作为展示
+                    const temp = data.data.high.match(/\d+/)[0]; 
 
-                if (desc.includes("雨")) icon = "🌧️";
-                else if (desc.includes("云") || desc.includes("阴")) icon = "☁️";
-                else if (desc.includes("雪")) icon = "❄️";
-                else if (desc.includes("雾") || desc.includes("霾")) icon = "🌫️";
+                    if (desc.includes("雨")) icon = "🌧️";
+                    else if (desc.includes("云") || desc.includes("阴")) icon = "☁️";
+                    else if (desc.includes("雪")) icon = "❄️";
+                    else if (desc.includes("雾") || desc.includes("霾")) icon = "🌫️";
 
-                document.getElementById('weatherIcon').innerText = icon;
-                document.getElementById('weatherLocation').innerText = city;
-                document.getElementById('weatherDetail').innerText = desc;
-                document.getElementById('weatherTemp').innerText = `${temp}°C`;
-
+                    document.getElementById('weatherIcon').innerText = icon;
+                    document.getElementById('weatherLocation').innerText = data.city;
+                    document.getElementById('weatherDetail').innerText = desc;
+                    document.getElementById('weatherTemp').innerText = `${temp}°C`;
+                } else {
+                    throw new Error("接口返回异常");
+                }
             } catch (error) {
                 console.error("天气获取失败:", error);
                 document.getElementById('weatherIcon').innerText = "🌤️";
-                document.getElementById('weatherLocation').innerText = "定位中";
-                document.getElementById('weatherDetail').innerText = "网络异常";
+                document.getElementById('weatherLocation').innerText = "天气服务";
+                document.getElementById('weatherDetail').innerText = "已被安全拦截";
                 document.getElementById('weatherTemp').innerText = "--°C";
             }
         }
@@ -142,9 +140,8 @@
         window.onload = function() {
             initWeather();
             
-            // 🌟 绕过被网盘占用的后端接口，直接把必应高清壁纸强塞进图片里！
-            const bingUrl = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN";
-            document.getElementById('today-img').src = bingUrl;
+            // 🌟 直接调用允许跨域的图片直连接口，强行渲染壁纸！
+            document.getElementById('today-img').src = "https://api.vvhan.com/api/bing";
         };
 
         // 选项卡切换逻辑
