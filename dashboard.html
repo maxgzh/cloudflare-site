@@ -39,12 +39,11 @@
         alert('请先登录！');
         window.location.href = 'index.html';
     } else {
-        // 别人登录展示名字，如果是你登录，你可以代码里单独加判断，这里直接展示用户名
         document.getElementById('welcome-title').innerText = `欢迎您，${currentUser}`;
-        loadMyFiles(); // 加载自己的文件
+        loadMyFiles(); 
     }
 
-    // 2. 加载当前用户专属文件的函数
+    // 2. 加载列表（包含新加的删除按钮）
     async function loadMyFiles() {
         const res = await fetch(`/api/get-files?username=${encodeURIComponent(currentUser)}`);
         const files = await res.json();
@@ -57,19 +56,23 @@
 
         listDiv.innerHTML = '';
         files.forEach(file => {
+            // 注意这里：我在下面加入了 deleteFile 按钮
             listDiv.innerHTML += `
                 <div class="file-item">
                     <div>
                         <strong>${file.file_name}</strong>
                         <div style="font-size:10px; color:#999;">${file.created_at}</div>
                     </div>
-                    <a class="file-link" href="${file.file_data}" download="${file.file_name}">下载/查看</a>
+                    <div>
+                        <a class="file-link" href="${file.file_data}" download="${file.file_name}" style="margin-right: 15px;">下载</a>
+                        <button onclick="deleteFile(${file.id})" style="background:#c0743a; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">删除</button>
+                    </div>
                 </div>
             `;
         });
     }
 
-    // 3. 上传文件逻辑（核心：转成 Base64 塞给后端）
+    // 3. 上传文件逻辑
     function uploadFile() {
         const fileInput = document.getElementById('fileInput');
         const status = document.getElementById('uploadStatus');
@@ -87,9 +90,8 @@
         status.innerText = "正在读取并加密文件...";
         const reader = new FileReader();
         
-        // 读取完成后触发
         reader.onload = async function() {
-            const base64Data = reader.result; // 这就是文件的 Base64 字符串
+            const base64Data = reader.result; 
             status.innerText = "正在安全写入云端 D1 数据库...";
 
             const res = await fetch('/api/upload-file', {
@@ -107,17 +109,39 @@
             if (result.success) {
                 status.style.color = "green";
                 status.innerText = "🎉 上传成功！已存入您的私有空间。";
-                fileInput.value = ''; // 清空选择器
-                loadMyFiles(); // 刷新列表
+                fileInput.value = ''; 
+                loadMyFiles(); 
             } else {
                 status.style.color = "red";
                 status.innerText = "上传失败: " + result.error;
             }
         };
 
-        reader.readAsDataURL(file); // 开始将文件转为Base64
+        reader.readAsDataURL(file); 
     }
 
+    // 4. 新增的删除文件逻辑
+    async function deleteFile(fileId) {
+        if (!confirm("⚠️ 确定要永久删除这个文件吗？删除后无法恢复！")) return;
+
+        const res = await fetch('/api/delete-file', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: fileId,
+                username: currentUser
+            })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            loadMyFiles(); // 删除成功后，默默刷新一次列表，文件就消失了
+        } else {
+            alert("删除失败: " + result.error);
+        }
+    }
+
+    // 5. 退出登录
     function logout() {
         localStorage.removeItem('currentUser');
         window.location.href = 'index.html';
