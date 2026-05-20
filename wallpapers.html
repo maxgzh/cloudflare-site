@@ -21,7 +21,7 @@
         </div>
 
     <script>
-        fetch('/api/get-wallpapers')
+        fetch('/api/get-public-wallpapers')
             .then(res => res.json())
             .then(data => {
                 const container = document.getElementById('gallery-container');
