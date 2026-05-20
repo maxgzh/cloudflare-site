@@ -32,19 +32,18 @@
         .weather-city { font-weight: bold; color: #c0743a; font-size: 15px;}
         .weather-temp { font-size: 20px; font-weight: bold; color: #2f251c; }
 
+        /* 🌟 极简版动态音乐组件 */
         .music-box { 
             position: absolute; top: 25px; right: 25px; 
             background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
             padding: 10px 18px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.5); 
-            display: flex; align-items: center; gap: 14px; z-index: 10; font-size: 14px; cursor: pointer; user-select: none; transition: background 0.3s;
+            display: flex; align-items: center; gap: 10px; z-index: 10; cursor: pointer; user-select: none; transition: background 0.3s;
         }
         .music-box:hover { background: rgba(255, 255, 255, 0.6); }
-        .music-info { text-align: right; }
-        .music-name { font-weight: bold; color: #c0743a; font-size: 13px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .music-status { font-size: 11px; color: #666; margin-top: 1px; }
         
-        /* 缓慢优雅的动感频谱条 */
-        .music-bars { display: flex; align-items: flex-end; gap: 3px; height: 16px; width: 22px;}
+        .music-status { font-size: 13px; font-weight: bold; color: #666; }
+        
+        .music-bars { display: flex; align-items: flex-end; gap: 3px; height: 14px; width: 22px;}
         .music-bars .bar { width: 3px; height: 4px; background-color: #2f251c; border-radius: 2px; transition: height 0.4s ease-in-out; }
         
         .music-bars.playing .bar { animation: bounceBars 2s ease-in-out infinite alternate; }
@@ -55,7 +54,7 @@
         
         @keyframes bounceBars {
             0% { height: 4px; }
-            100% { height: 16px; }
+            100% { height: 14px; }
         }
 
         #wallpaper-widget { position: fixed; bottom: 25px; right: 25px; width: 220px; background: rgba(255,255,255,0.85); padding: 12px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); backdrop-filter: blur(8px); text-align: center; font-size: 13px; border: 1px solid #eee; transition: transform 0.3s ease; z-index: 10; }
@@ -65,7 +64,7 @@
 </head>
 <body>
 
-    <audio id="bgm-player" loop preload="auto" src="https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"></audio>
+    <audio id="bgm-player" loop preload="auto" src="bgm.mp3"></audio>
 
     <div class="weather-box" id="weatherBox">
         <div style="font-size: 26px;" id="weatherIcon">🌍</div>
@@ -77,10 +76,7 @@
     </div>
 
     <div class="music-box" id="musicBox" onclick="toggleMusic(event)">
-        <div class="music-info">
-            <div class="music-name" id="musicName">静谧时分 - 纯钢琴曲</div>
-            <div class="music-status" id="musicStatus">系统静音 / 任意点击播放</div>
-        </div>
+        <div class="music-status" id="musicStatus">点击播放音乐</div>
         <div class="music-bars" id="musicBars">
             <div class="bar"></div>
             <div class="bar"></div>
@@ -133,11 +129,11 @@
             if (audio.paused) {
                 audio.play().then(() => {
                     musicBars.classList.add('playing'); 
-                    musicStatus.innerText = '🎵 正在播放';
+                    musicStatus.innerText = '正在播放';
                     musicStatus.style.color = '#3f6f6b';
                 }).catch(err => {
                     console.error("音乐播放失败:", err);
-                    musicStatus.innerText = '播放失败(链接异常)';
+                    musicStatus.innerText = '播放异常(找不到文件)';
                     musicStatus.style.color = 'red';
                 });
             } else {
@@ -191,15 +187,8 @@
         window.onload = function() {
             startClock();  
             initWeather(); 
-            
-            // 引导用户进行任意页面交互时自动触发播放
-            document.body.addEventListener('click', function autoPlayMusic() {
-                if(audio.paused) {
-                    toggleMusic();
-                }
-                document.body.removeEventListener('click', autoPlayMusic);
-            }, { once: true });
 
+            // 壁纸逻辑保持不变
             fetch('/api/get-public-wallpapers?type=latest')
                 .then(res => res.json())
                 .then(data => {
