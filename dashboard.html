@@ -135,7 +135,7 @@
         loadMyFiles();
     }
 
-    // 5. 升级版：支持真实进度条的大文件上传逻辑
+    // 5. 修复版：支持真实进度条的大文件上传逻辑
     function uploadFile() {
         const fileInput = document.getElementById('fileInput');
         const status = document.getElementById('uploadStatus');
@@ -158,10 +158,10 @@
             
             // 显示进度条，并把进度清零
             progressContainer.style.display = "block";
-            progressBar.style.style.width = "0%";
+            progressBar.style.width = "0%"; // 🌟 这里已经修复了多余的 .style 笔误！
             progressPercent.innerText = "0%";
 
-            // 🌟 核心：使用 XMLHttpRequest 开启高精度进度监视
+            // 使用 XMLHttpRequest 开启高精度进度监视
             const xhr = new XMLHttpRequest();
             xhr.open('POST', '/api/upload-wallpaper', true);
             xhr.setRequestHeader('Content-Type', 'application/json');
@@ -181,16 +181,24 @@
                 progressContainer.style.display = "none";
 
                 if (xhr.status === 200) {
-                    const result = JSON.parse(xhr.responseText);
-                    if (result.success) {
-                        status.style.color = "green";
-                        status.innerText = "🎉 成功存入 R2 存储桶，安全熔断监控中！";
-                        fileInput.value = ''; 
-                        loadMyFiles(); 
-                    } else {
+                    try {
+                        const result = JSON.parse(xhr.responseText);
+                        if (result.success) {
+                            status.style.color = "green";
+                            status.innerText = "🎉 成功存入 R2 存储桶，安全熔断监控中！";
+                            fileInput.value = ''; 
+                            loadMyFiles(); 
+                        } else {
+                            status.style.color = "red";
+                            status.innerText = result.error;
+                        }
+                    } catch(err) {
                         status.style.color = "red";
-                        status.innerText = result.error;
+                        status.innerText = "服务器返回数据解析失败，请检查后端是否报错！";
                     }
+                } else if (xhr.status === 413) {
+                    status.style.color = "red";
+                    status.innerText = "❌ 上传失败：文件体积超出了 Cloudflare 免费版单次传输大小限制！";
                 } else {
                     status.style.color = "red";
                     status.innerText = "上传失败，服务器响应状态码: " + xhr.status;
@@ -201,7 +209,7 @@
             xhr.onerror = function() {
                 progressContainer.style.display = "none";
                 status.style.color = "red";
-                status.innerText = "网络异常，上传中断！";
+                status.innerText = "网络异常或请求被拒绝，上传中断！";
             };
 
             // 发射！
