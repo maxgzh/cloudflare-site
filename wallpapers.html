@@ -1,42 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>壁纸画廊 - maxgzh</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>能量中转站 - 壁纸收藏库</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-        h1 { text-align: center; color: #333; }
-        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
-        .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .card img { width: 100%; height: 200px; object-fit: cover; }
-        .info { padding: 15px; text-align: center; }
-        .date { color: #888; font-size: 14px; }
-        .btn-back { display: block; width: 100px; margin: 20px auto; padding: 10px; text-align: center; background: #333; color: white; border-radius: 5px; text-decoration: none; }
+        :root { --sand: #f4ecdf; --coal: #2f251c; --soft-line: rgba(31, 26, 20, 0.15); }
+        body { margin: 0; padding: 30px 20px; min-height: 100vh; background: var(--sand); font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: var(--coal); }
+        
+        body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(circle at 12% 10%, #f9efe0 0%, transparent 55%), radial-gradient(circle at 80% 18%, #f4d9b0 0%, transparent 60%), linear-gradient(160deg, #f6efe2 10%, #efe1cb 45%, #f4ecdf 100%); z-index: -2; }
+        
+        .header { max-width: 1200px; margin: 0 auto 30px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { margin: 0; font-size: 1.8rem; color: var(--coal); }
+        .back-btn { text-decoration: none; color: var(--coal); font-weight: bold; padding: 8px 16px; background: rgba(255,255,255,0.5); border-radius: 8px; border: 1px solid var(--soft-line); transition: 0.3s; }
+        .back-btn:hover { background: var(--coal); color: white; }
+
+        /* 壁纸瀑布流网格布局 */
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .gallery-item { background: rgba(255,255,255,0.6); border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.03); border: 1px solid var(--soft-line); transition: transform 0.3s; cursor: pointer; }
+        .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+        .gallery-item img { width: 100%; height: 180px; object-fit: cover; display: block; background: #eee; }
+        .gallery-info { padding: 12px; font-size: 13px; font-weight: bold; text-align: center; background: rgba(255,255,255,0.4); border-top: 1px solid var(--soft-line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* 全屏大图查看器 */
+        #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        #lightbox img { max-width: 90%; max-height: 85vh; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 35px; cursor: pointer; font-weight: bold; }
+        
+        #loading { text-align: center; font-size: 1.1rem; margin-top: 100px; font-weight: bold; color: #666; }
     </style>
 </head>
 <body>
-    <h1>全自动采集壁纸库</h1>
-    <a href="index.html" class="btn-back">返回首页</a>
-    <div class="gallery" id="gallery-container">
-        </div>
+
+    <div class="header">
+        <h1>🌌 壁纸收藏库</h1>
+        <a href="index.html" class="back-btn">&laquo; 返回主页</a>
+    </div>
+
+    <div id="loading">正在从云端数据库拉取壁纸库...</div>
+
+    <div id="galleryGrid" class="gallery-grid"></div>
+
+    <div id="lightbox" onclick="this.style.display='none'">
+        <span class="close-btn">&times;</span>
+        <img id="lightbox-img" src="">
+    </div>
 
     <script>
-        fetch('/api/get-public-wallpapers')
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById('gallery-container');
-                data.forEach(item => {
-                    container.innerHTML += `
-                        <div class="card">
-                            <img src="${item.img_url}">
-                            <div class="info">
-                                <div class="date">${item.img_date}</div>
-                                <button onclick="window.open('${item.img_url}')" style="margin-top:10px; padding:5px 10px; cursor:pointer;">查看原图</button>
-                            </div>
-                        </div>
-                    `;
+        window.onload = function() {
+            const grid = document.getElementById('galleryGrid');
+            const loading = document.getElementById('loading');
+
+            // 呼叫后台接口获取数据
+            fetch('/api/get-public-wallpapers')
+                .then(res => res.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    
+                    if (!data || data.length === 0) {
+                        grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#888; font-weight:bold;">壁纸库里目前没有数据哦</p>`;
+                        return;
+                    }
+
+                    // 开始遍历并渲染壁纸数据
+                    data.forEach(item => {
+                        // 🌟 核心修复：精准对齐你 D1 数据库里真实的列名 img_url 和 img_name
+                        const imgUrl = item.img_url || ''; 
+                        const imgName = item.img_name || '每日精选壁纸';
+
+                        if (imgUrl) {
+                            grid.innerHTML += `
+                                <div class="gallery-item" onclick="openLightbox('${imgUrl}')">
+                                    <img src="${imgUrl}" alt="壁纸" loading="lazy">
+                                    <div class="gallery-info">${imgName}</div>
+                                </div>
+                            `;
+                        }
+                    });
+                })
+                .catch(err => {
+                    console.error("加载壁纸库失败:", err);
+                    loading.innerText = "❌ 无法连接到壁纸数据库，请检查后端文件。";
                 });
-            });
+        };
+
+        function openLightbox(url) {
+            document.getElementById('lightbox-img').src = url;
+            document.getElementById('lightbox').style.display = 'flex';
+        }
     </script>
 </body>
 </html>
