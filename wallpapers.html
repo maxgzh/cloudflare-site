@@ -15,14 +15,12 @@
         .back-btn { text-decoration: none; color: var(--coal); font-weight: bold; padding: 8px 16px; background: rgba(255,255,255,0.5); border-radius: 8px; border: 1px solid var(--soft-line); transition: 0.3s; }
         .back-btn:hover { background: var(--coal); color: white; }
 
-        /* 壁纸瀑布流网格布局 */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
         .gallery-item { background: rgba(255,255,255,0.6); border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.03); border: 1px solid var(--soft-line); transition: transform 0.3s; cursor: pointer; }
         .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
         .gallery-item img { width: 100%; height: 180px; object-fit: cover; display: block; background: #eee; }
         .gallery-info { padding: 12px; font-size: 13px; font-weight: bold; text-align: center; background: rgba(255,255,255,0.4); border-top: 1px solid var(--soft-line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* 全屏大图查看器 */
         #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 9999; }
         #lightbox img { max-width: 90%; max-height: 85vh; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
         .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 35px; cursor: pointer; font-weight: bold; }
@@ -38,7 +36,6 @@
     </div>
 
     <div id="loading">正在从云端数据库拉取壁纸库...</div>
-
     <div id="galleryGrid" class="gallery-grid"></div>
 
     <div id="lightbox" onclick="this.style.display='none'">
@@ -51,22 +48,32 @@
             const grid = document.getElementById('galleryGrid');
             const loading = document.getElementById('loading');
 
-            // 呼叫后台接口获取数据
             fetch('/api/get-public-wallpapers')
                 .then(res => res.json())
-                .then(data => {
+                .then(rawData => {
                     loading.style.display = 'none';
-                    
-                    if (!data || data.length === 0) {
-                        grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#888; font-weight:bold;">壁纸库里目前没有数据哦</p>`;
+                    console.log("后端返回的原始数据:", rawData);
+
+                    // 🌟 1. 自动拆包：兼容直接返回数组，或者包裹在 results、data 里的情况
+                    let list = [];
+                    if (Array.isArray(rawData)) {
+                        list = rawData;
+                    } else if (rawData && Array.isArray(rawData.results)) {
+                        list = rawData.results;
+                    } else if (rawData && Array.isArray(rawData.data)) {
+                        list = rawData.data;
+                    }
+
+                    if (!list || list.length === 0) {
+                        grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#888; font-weight:bold;">暂无壁纸数据 (解析到空列表)</p>`;
                         return;
                     }
 
-                    // 开始遍历并渲染壁纸数据
-                    data.forEach(item => {
-                        // 🌟 核心修复：精准对齐你 D1 数据库里真实的列名 img_url 和 img_name
-                        const imgUrl = item.img_url || ''; 
-                        const imgName = item.img_name || '每日精选壁纸';
+                    // 2. 开始渲染
+                    list.forEach(item => {
+                        // 🌟 2. 字段名终极兼容：不管大小写还是带不带下划线，全部通杀
+                        const imgUrl = item.img_url || item.imgUrl || item.url || item.URL || ''; 
+                        const imgName = item.img_name || item.imgName || item.title || item.name || '每日精选';
 
                         if (imgUrl) {
                             grid.innerHTML += `
