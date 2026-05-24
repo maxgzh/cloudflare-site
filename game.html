@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赛博小店 - AI经营模拟</title>
+    <style>
+        :root { --sand: #f4ecdf; --coal: #2f251c; --accent: #c0743a; }
+        body { margin: 0; padding: 20px; min-height: 100vh; background: var(--coal); color: var(--sand); font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; align-items: center; }
+        
+        .header { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--sand); padding-bottom: 10px; }
+        .back-btn { color: var(--accent); text-decoration: none; font-weight: bold; border: 1px solid var(--accent); padding: 5px 10px; border-radius: 4px; }
+        
+        .dashboard { width: 100%; max-width: 800px; display: flex; justify-content: space-between; background: rgba(244, 236, 223, 0.1); padding: 15px; border-radius: 8px; box-sizing: border-box; font-size: 18px; font-weight: bold; }
+        .dashboard span { color: var(--accent); }
+        
+        .log-screen { width: 100%; max-width: 800px; height: 350px; background: #1a140f; border: 1px solid var(--sand); margin-top: 20px; overflow-y: auto; padding: 15px; box-sizing: border-box; line-height: 1.5; border-radius: 8px; }
+        .log-entry { margin-bottom: 10px; border-left: 3px solid var(--accent); padding-left: 10px; }
+        .log-sys { color: #888; font-size: 0.9em; }
+        
+        .controls { width: 100%; max-width: 800px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+        button { background: var(--sand); color: var(--coal); border: none; padding: 15px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; transition: 0.2s; font-family: inherit;}
+        button:hover { background: var(--accent); color: white; }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; }
+        
+        /* 存档登录弹窗 */
+        #auth-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { background: var(--sand); color: var(--coal); padding: 30px; border-radius: 12px; width: 300px; text-align: center; }
+        .modal-card input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px;}
+        .modal-card p { font-size: 12px; color: #666; margin-bottom: 15px;}
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>🏪 赛博小店系统 v1.0</h2>
+        <div>
+            <button class="back-btn" onclick="openSaveModal()" style="background:var(--accent); color:var(--sand);">💾 存档并互通</button>
+            <a href="index.html" class="back-btn" style="margin-left: 10px;">&laquo; 撤退</a>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div>第 <span id="ui-day">1</span> 天</div>
+        <div>资金: $<span id="ui-money">1000</span></div>
+        <div>库存: <span id="ui-inv">0</span> 件</div>
+        <div>名声: <span id="ui-rep">10</span></div>
+    </div>
+
+    <div class="log-screen" id="logScreen">
+        <div class="log-entry">【系统】欢迎来到赛博黑市。你的小店刚刚开业，DeepSeek 商战 AI 正在注视着你的每一个决定...</div>
+    </div>
+
+    <div class="controls">
+        <button id="btn-buy" onclick="doAction('花钱进货，不管质量如何')">📦 黑市进货 (花费金钱)</button>
+        <button id="btn-sell" onclick="doAction('疯狂推销库存商品')">💰 疯狂推销 (消耗库存)</button>
+        <button id="btn-rand" onclick="doAction('在店门口举办奇怪的营销活动')">🎪 搞事营销 (随机事件)</button>
+    </div>
+
+    <div id="auth-modal">
+        <div class="modal-card">
+            <h3>云端神经链路上传</h3>
+            <p>输入中转站账号。<br>若账号不存在，系统将自动为你注册。</p>
+            <input type="text" id="auth-user" placeholder="输入账号">
+            <input type="password" id="auth-pwd" placeholder="输入密码">
+            <button onclick="saveGame()" style="width: 100%; background: var(--coal); color: var(--sand); margin-top: 10px;">执行上传</button>
+            <button onclick="document.getElementById('auth-modal').style.display='none'" style="width: 100%; margin-top: 10px; background: transparent; border: 1px solid var(--coal);">取消</button>
+        </div>
+    </div>
+
+    <script>
+        // 初始状态
+        let state = { day: 1, money: 1000, inventory: 0, reputation: 10 };
+        const logScreen = document.getElementById('logScreen');
+        const btns = document.querySelectorAll('.controls button');
+
+        // 初始化加载本地记录（如果有）
+        window.onload = async function() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                document.getElementById('auth-user').value = savedUser;
+                addLog(`检测到中转站登录痕迹：[${savedUser}]，点击存档可同步数据。`, true);
+                
+                // 尝试从云端拉取存档
+                const res = await fetch('/api/game-load', { method: 'POST', body: JSON.stringify({username: savedUser}) });
+                const data = await res.json();
+                if (data.success) {
+                    state = data.state;
+                    updateUI();
+                    addLog(`【系统】云端记忆提取成功，欢迎回来，${savedUser}。`, true);
+                }
+            }
+            updateUI();
+        };
+
+        function updateUI() {
+            document.getElementById('ui-day').innerText = state.day;
+            document.getElementById('ui-money').innerText = state.money;
+            document.getElementById('ui-inv').innerText = state.inventory;
+            document.getElementById('ui-rep').innerText = state.reputation;
+        }
+
+        function addLog(text, isSys = false) {
+            const div = document.createElement('div');
+            div.className = isSys ? 'log-entry log-sys' : 'log-entry';
+            div.innerText = text;
+            logScreen.appendChild(div);
+            logScreen.scrollTop = logScreen.scrollHeight;
+        }
+
+        // 🌟 核心引擎：呼叫 DeepSeek AI
+        async function doAction(actionName) {
+            btns.forEach(b => b.disabled = true);
+            addLog(`> 玩家行动：${actionName}`);
+            addLog(`⌛ AI 正在演算因果律...`, true);
+
+            try {
+                const res = await fetch('/api/game-ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ state, action: actionName })
+                });
+                const data = await res.json();
+                
+                // 解析 AI 返回的内容和数值变化
+                const reply = data.reply;
+                addLog(reply);
+
+                // 正则提取 [MONEY:+10, INV:-5, REP:0]
+                const match = reply.match(/\[MONEY:([+-]?\d+),\s*INV:([+-]?\d+),\s*REP:([+-]?\d+)\]/i);
+                if (match) {
+                    state.money += parseInt(match[1]);
+                    state.inventory += parseInt(match[2]);
+                    state.reputation += parseInt(match[3]);
+                    if(state.money < 0) state.money = 0;
+                    if(state.inventory < 0) state.inventory = 0;
+                }
+                
+                state.day += 1;
+                updateUI();
+
+            } catch (err) {
+                addLog("❌ 神经链路断开，行动失败。", true);
+            }
+            btns.forEach(b => b.disabled = false);
+        }
+
+        // 存档相关逻辑
+        function openSaveModal() {
+            document.getElementById('auth-modal').style.display = 'flex';
+        }
+
+        async function saveGame() {
+            const user = document.getElementById('auth-user').value;
+            const pwd = document.getElementById('auth-pwd').value;
+            if(!user || !pwd) return alert('账号密码不能为空');
+
+            addLog(`⌛ 正在打包记忆上传至云端...`, true);
+            document.getElementById('auth-modal').style.display = 'none';
+
+            const res = await fetch('/api/game-save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pwd, state: state })
+            });
+            const data = await res.json();
+
+            if(data.success) {
+                addLog(`✅ 记忆上传成功！账号 [${user}] 进度已保存。`, true);
+                localStorage.setItem('currentUser', user); // 同步主站登录状态
+            } else {
+                addLog(`❌ 上传失败：${data.error}`, true);
+            }
+        }
+    </script>
+</body>
+</html>
