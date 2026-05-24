@@ -17,8 +17,8 @@ export async function onRequestPost(context) {
     当前状态：第${state.day}天，资金 ${state.money}，库存 ${state.inventory}，名声 ${state.reputation}。
     玩家刚执行动作：“${action}”。
     请生成一个随机的突发事件，并给出结果。
-    请直接以第一人称口吻回复，语气冷酷、黑色幽默，字数控制在100字以内。
-    末尾附带数值变化，严格使用格式：[MONEY:+100, INV:-5, REP:+2]（没有变化填0）。
+    【最高指令】：接下来的剧情描述请必须、严格且只能使用“中文”进行回复！语气要冷酷、黑色幽默，字数控制在100字以内。
+    剧情结束后，末尾必须附带数值变化，且数值变化区的标签必须保持英文，严格使用此格式：[MONEY:+100, INV:-5, REP:+2]（没有变化填0）。
     `;
 
     const res = await fetch(BASE_URL, {
