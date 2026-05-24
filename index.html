@@ -45,6 +45,11 @@
         .music-bars.playing .bar:nth-child(4) { animation-duration: 1.7s; }
         @keyframes bounceBars { 0% { height: 3px; } 100% { height: 11px; } }
 
+        /* 🎮 全新排版的游戏大厅入口卡片 */
+        .game-lobby-card { width: 100%; background: rgba(255,255,255,0.85); padding: 15px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.04); backdrop-filter: blur(10px); text-align: center; text-decoration: none; color: var(--coal); font-weight: bold; font-size: 1.05rem; border: 1px solid var(--soft-line); transition: all 0.3s; box-sizing: border-box; display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .game-lobby-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); background: white;}
+        .game-lobby-card span { font-size: 1.3rem; }
+
         #wallpaper-widget { width: 100%; background: rgba(255,255,255,0.75); padding: 10px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.03); backdrop-filter: blur(6px); text-align: center; font-size: 12px; border: 1px solid #eee; transition: all 0.3s; box-sizing: border-box; margin-bottom: 30px;}
         #wallpaper-widget p { margin: 0 0 6px 0; color: #666; font-weight: bold; font-size: 13px;}
         #today-img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.04); background: #eee;}
@@ -52,7 +57,7 @@
 
         @media (min-width: 768px) {
             body { justify-content: center; padding-top: 0; }
-            .center-wrapper { padding: 0; gap: 30px;}
+            .center-wrapper { padding: 0; gap: 25px;}
             .clock-widget { border-radius: 0; background: none; backdrop-filter: none; box-shadow: none; padding: 0; width: auto;}
             .clock-time { font-size: 3.2rem;}
             .clock-date { font-size: 1rem;}
@@ -70,6 +75,7 @@
             .music-bars { gap: 3px; height: 14px; width: 22px;}
             .music-bars .bar { width: 3px; border-radius: 2px;}
             @keyframes bounceBars { 0% { height: 4px; } 100% { height: 14px; } }
+            
             #wallpaper-widget { position: fixed; bottom: 25px; right: 25px; width: 220px; padding: 12px; margin: 0; text-align: center; }
             #today-img { height: 130px;}
             #wallpaper-widget p { font-size: 14px;}
@@ -89,10 +95,6 @@
         </div>
         <div id="weatherTemp" class="weather-temp" style="margin-left: 5px;">--°C</div>
     </div>
-
-    <a href="games.html" style="position: fixed; bottom: 25px; left: 25px; background: rgba(255,255,255,0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 12px 18px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); text-decoration: none; color: #c0743a; font-weight: bold; font-size: 14px; z-index: 100; border: 1px solid rgba(255,255,255,0.5); transition: all 0.3s; display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 18px;">🎮</span> 游戏大厅
-    </a>
 
     <div class="music-box" id="musicBox" onclick="toggleMusic(event)">
         <div class="music-status" id="musicStatus">点击播放音乐</div>
@@ -129,6 +131,10 @@
             </div>
             <div id="msg"></div>
         </div>
+
+        <a href="lobby.html" class="game-lobby-card">
+            <span>🎮</span> 智能游戏大厅入口
+        </a>
 
         <div id="wallpaper-widget">
             <p>今日必应壁纸</p>
@@ -235,7 +241,6 @@
         }
 
         window.onload = function() {
-            // 🌟 进站立刻执行无障碍访客登记
             const currentUser = localStorage.getItem('currentUser') || '游客';
             fetch('/api/record-visitor', { method: 'POST', body: currentUser }).catch(err => console.log(err));
 
