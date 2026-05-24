@@ -1,11 +1,27 @@
 export async function onRequestPost(context) {
   const { env, request } = context;
   try {
-    // 接收从前端 search.html 传来的完整对话历史（上下文连贯）
     const body = await request.json();
     const userMessages = body.messages || [];
-    
-    // 🌟 在 Cloudflare 后台配置的隐藏环境变量
+    const username = body.username || '游客'; // 接收前端传来的用户身份
+
+    // 🌟 1. 提取用户最新一次发送的内容（数组里的最后一条记录）
+    const lastMessage = userMessages[userMessages.length - 1];
+    const queryText = lastMessage ? lastMessage.content : '';
+
+    // 🌟 2. 秘密记账：将用户的搜索记录静默写入 D1 数据库
+    if (queryText && env.DB) {
+      try {
+        await env.DB.prepare(
+          "INSERT INTO search_logs (username, query) VALUES (?, ?)"
+        ).bind(username, queryText).run();
+      } catch (dbErr) {
+        // 即使数据库写入失败，也不要报错打断用户的 AI 搜索体验
+        console.error("数据库记录失败:", dbErr);
+      }
+    }
+
+    // 🌟 3. 正常执行 AI 问答请求
     const API_KEY = env.DEEPSEEK_API_KEY; 
     const BASE_URL = "https://api.deepseek.com/chat/completions"; 
 
@@ -13,16 +29,13 @@ export async function onRequestPost(context) {
       throw new Error("云端未配置 DEEPSEEK_API_KEY。");
     }
 
-    // 强力注入系统人设，确保它表现得像个专业的搜索引擎
     const systemPrompt = { 
         role: "system", 
-        content: "你是由能量中转站接入的超级智能搜索助手。你的回答必须极其准确、结构清晰、直击要害。当用户询问专业知识时，像一个资深的专家一样解答；当用户闲聊时，保持礼貌和高效。请始终使用 Markdown 格式（如换行、列表）输出，方便用户阅读。" 
+        content: "你是由能量中转站接入的超级智能搜索助手。你的回答必须极其准确、结构清晰、直击要害。当用户询问专业知识时，像一个资深的专家一样解答；当用户闲聊时，保持礼貌和高效。请始终使用 Markdown 格式输出。" 
     };
 
-    // 组合人设和用户真实的对话历史
     const finalMessages = [systemPrompt, ...userMessages];
 
-    // 发起安全隐秘的网络请求
     const res = await fetch(BASE_URL, {
         method: "POST",
         headers: { 
@@ -30,9 +43,9 @@ export async function onRequestPost(context) {
             "Authorization": `Bearer ${API_KEY}` 
         },
         body: JSON.stringify({
-            model: "deepseek-chat", // 使用通用大模型
+            model: "deepseek-chat",
             messages: finalMessages,
-            temperature: 0.7 // 0.7 比较适合搜索问答，逻辑严谨不易幻觉
+            temperature: 0.7
         })
     });
 
@@ -42,7 +55,6 @@ export async function onRequestPost(context) {
       throw new Error("AI 中枢拒绝响应或返回异常。");
     }
 
-    // 将 AI 的回复打包送回前端的对话框
     return new Response(JSON.stringify({ reply: data.choices[0].message.content }), { 
         headers: { "Content-Type": "application/json;charset=utf-8" } 
     });
