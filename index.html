@@ -3,40 +3,36 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>能量中转站 - 登录</title>
+    <title>能量中转站 - AI 搜索中心</title>
     <style>
         :root { --sand: #f4ecdf; --coal: #2f251c; --soft-line: rgba(31, 26, 20, 0.15); --success: #3f6f6b; --orange: #c0743a;}
         
-        body { margin: 0; padding: 0; min-height: 100vh; background: var(--sand); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; position: relative; overflow-x: hidden; color: var(--coal); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 12vh; box-sizing: border-box;}
+        body { margin: 0; padding: 0; min-height: 100vh; background: var(--sand); font-family: -apple-system, BlinkMacSystemFont, sans-serif; position: relative; overflow-x: hidden; color: var(--coal); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 15vh; box-sizing: border-box;}
         
         body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(circle at 12% 10%, #f9efe0 0%, transparent 55%), radial-gradient(circle at 80% 18%, #f4d9b0 0%, transparent 60%), radial-gradient(circle at 70% 82%, #e9efe9 0%, transparent 55%), linear-gradient(160deg, #f6efe2 10%, #efe1cb 45%, #f4ecdf 100%); z-index: -2; }
         body::after { content: ""; position: fixed; inset: 0; background-image: repeating-linear-gradient(100deg, rgba(31, 26, 20, 0.04), rgba(31, 26, 20, 0.04) 1px, transparent 1px, transparent 12px), repeating-linear-gradient(10deg, rgba(31, 26, 20, 0.03), rgba(31, 26, 20, 0.03) 1px, transparent 1px, transparent 10px); opacity: 0.55; z-index: -1; pointer-events: none; }
         
-        .center-wrapper { display: flex; flex-direction: column; align-items: center; gap: 20px; z-index: 10; width: 100%; max-width: 360px; padding: 0 20px; box-sizing: border-box;}
+        .center-wrapper { display: flex; flex-direction: column; align-items: center; gap: 30px; z-index: 10; width: 100%; max-width: 650px; padding: 0 20px; box-sizing: border-box;}
 
-        .clock-widget { text-align: center; font-variant-numeric: tabular-nums; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(8px); padding: 20px 30px; border-radius: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); width: 100%; box-sizing: border-box;}
-        .clock-time { font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; line-height: 1; margin-bottom: 5px; }
-        .clock-date { font-size: 0.95rem; font-weight: 600; opacity: 0.8; letter-spacing: 0.5px; }
+        .clock-widget { text-align: center; font-variant-numeric: tabular-nums; width: 100%; box-sizing: border-box; margin-bottom: 10px;}
+        .clock-time { font-size: 3rem; font-weight: 800; letter-spacing: 1px; line-height: 1; margin-bottom: 5px; color: var(--coal);}
+        .clock-date { font-size: 1rem; font-weight: 600; opacity: 0.8; letter-spacing: 0.5px; }
 
-        .auth-card { background: rgba(255, 255, 255, 0.85); padding: 30px 20px; border-radius: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.04); border: 1px solid var(--soft-line); width: 100%; box-sizing: border-box; backdrop-filter: blur(10px); }
-        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--soft-line); }
-        .tab { flex: 1; text-align: center; padding: 8px; cursor: pointer; font-weight: bold; color: #888; font-size: 0.95rem;}
-        .tab.active { color: var(--coal); border-bottom: 2px solid var(--coal); margin-bottom: -2px; }
-        .input-group { margin-bottom: 14px; }
-        .input-group label { display: block; font-size: 0.85rem; margin-bottom: 5px; color: var(--coal); font-weight: bold;}
-        .input-group input { width: 100%; padding: 12px; border: 1px solid var(--soft-line); border-radius: 6px; box-sizing: border-box; background: rgba(255,255,255,0.8); outline: none; -webkit-appearance: none; font-size: 1rem;}
-        .btn { width: 100%; padding: 13px; border: none; border-radius: 6px; background: var(--coal); color: white; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 8px; }
-        .btn:hover, .btn:active { opacity: 0.9;}
-        #msg { margin-top: 15px; font-size: 0.8rem; text-align: center; color: var(--orange); font-weight: bold; min-height: 18px; line-height: 1.4;}
+        /* 🌟 核心：极其优美的 AI 搜索框 */
+        .search-container { width: 100%; position: relative; display: flex; box-shadow: 0 10px 35px rgba(0,0,0,0.06); border-radius: 30px; overflow: hidden; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.5); transition: all 0.3s;}
+        .search-container:focus-within { box-shadow: 0 15px 40px rgba(0,0,0,0.1); transform: translateY(-2px); border-color: rgba(192, 116, 58, 0.4);}
+        .search-container input { flex: 1; border: none; padding: 20px 25px; font-size: 1.1rem; outline: none; background: transparent; color: var(--coal); font-weight: 500;}
+        .search-container button { background: var(--coal); color: white; border: none; padding: 0 35px; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px;}
+        .search-container button:hover { background: var(--accent); }
 
-        /* 天气盒子：绝对定位 absolute */
-        .weather-box { position: absolute; top: 15px; left: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20;}
+        /* 左上角天气 */
+        .weather-box { position: absolute; top: 15px; left: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20;}
         .weather-city { font-weight: bold; color: var(--orange); font-size: 12px;}
         .weather-detail { font-size: 11px; color: #666; margin-top: 1px;}
         .weather-temp { font-size: 16px; font-weight: bold; color: var(--coal); }
 
-        /* 音乐盒子：绝对定位 absolute */
-        .music-box { position: absolute; top: 15px; right: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20; cursor: pointer; user-select: none;}
+        /* 左上角音乐（排在天气下面，防止拥挤） */
+        .music-box { position: absolute; top: 75px; left: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20; cursor: pointer; user-select: none;}
         .music-status { font-weight: bold; color: #777; font-size: 12px;}
         .music-bars { display: flex; align-items: flex-end; gap: 2.5px; height: 11px;}
         .music-bars .bar { width: 2.5px; height: 3px; background-color: var(--coal); border-radius: 1px;}
@@ -47,67 +43,45 @@
         .music-bars.playing .bar:nth-child(4) { animation-duration: 1.7s; }
         @keyframes bounceBars { 0% { height: 3px; } 100% { height: 11px; } }
 
-        /* 🎮 游戏大厅按钮：完全照抄上面盒子的 absolute 代码，完美停靠左下角 */
-        .game-btn { 
-            position: absolute; 
-            bottom: 20px; 
-            left: 20px; 
-            background: rgba(255, 255, 255, 0.4); 
-            backdrop-filter: blur(10px); 
-            -webkit-backdrop-filter: blur(10px); 
-            padding: 8px 12px; 
-            border-radius: 12px; 
-            border: 1px solid rgba(255,255,255,0.4); 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            z-index: 20; 
-            text-decoration: none; 
-            color: var(--orange); 
-            font-weight: bold; 
-            font-size: 14px; 
-            transition: 0.2s;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .game-btn:active { opacity: 0.8; transform: scale(0.95); }
+        /* 🌟 右上角用户控制中枢 */
+        .user-widget { position: absolute; top: 15px; right: 15px; display: flex; gap: 8px; z-index: 20; align-items: center;}
+        .btn-glass { background: rgba(255,255,255,0.6); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5); color: var(--coal); font-weight: bold; cursor: pointer; text-decoration: none; font-size: 13px; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.02); display: flex; align-items: center;}
+        .btn-glass:hover { background: white; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
+        
+        .btn-primary { background: var(--coal); color: var(--sand); border: none; }
+        .btn-primary:hover { background: var(--accent); color: white; }
+        .user-greeting { font-size: 13px; font-weight: bold; color: var(--coal); margin-right: 5px; background: rgba(255,255,255,0.4); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(10px);}
 
-        /* 🚨 核心排版修复：底部留出 90px 空白（margin-bottom: 90px;），专门给游戏按钮腾出位置，坚决不挡壁纸！ */
-        #wallpaper-widget { width: 100%; background: rgba(255,255,255,0.75); padding: 10px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.03); backdrop-filter: blur(6px); text-align: center; font-size: 12px; border: 1px solid #eee; transition: all 0.3s; box-sizing: border-box; margin-bottom: 90px;}
-        #wallpaper-widget p { margin: 0 0 6px 0; color: #666; font-weight: bold; font-size: 13px;}
+        /* 底部元素 */
+        .game-btn { position: absolute; bottom: 20px; left: 20px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20; text-decoration: none; color: var(--orange); font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .game-btn:active { transform: scale(0.95); }
+
+        #wallpaper-widget { width: 100%; background: rgba(255,255,255,0.75); padding: 10px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.03); backdrop-filter: blur(6px); text-align: center; font-size: 12px; border: 1px solid #eee; transition: all 0.3s; box-sizing: border-box; margin-bottom: 90px; max-width: 360px; margin-top: 40px;}
         #today-img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.04); background: #eee;}
-        #wallpaper-widget a { display: block; margin-top: 8px; color: #007bff; text-decoration: none; font-weight: bold; font-size: 13px;}
+
+        /* 🌟 登录注册弹窗层 */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 9999; display: none; justify-content: center; align-items: center; padding: 20px;}
+        .auth-card { background: var(--sand); padding: 30px 20px; border-radius: 18px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); border: 1px solid var(--soft-line); width: 100%; max-width: 320px; box-sizing: border-box; position: relative;}
+        .close-modal { position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 20px; cursor: pointer; color: #888;}
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--soft-line); }
+        .tab { flex: 1; text-align: center; padding: 8px; cursor: pointer; font-weight: bold; color: #888; font-size: 0.95rem;}
+        .tab.active { color: var(--coal); border-bottom: 2px solid var(--coal); margin-bottom: -2px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { display: block; font-size: 0.85rem; margin-bottom: 5px; color: var(--coal); font-weight: bold;}
+        .input-group input { width: 100%; padding: 12px; border: 1px solid var(--soft-line); border-radius: 6px; box-sizing: border-box; background: rgba(255,255,255,0.8); outline: none; font-size: 1rem;}
+        .btn { width: 100%; padding: 13px; border: none; border-radius: 6px; background: var(--coal); color: white; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 8px; }
+        .btn:hover { opacity: 0.9;}
+        #msg { margin-top: 15px; font-size: 0.8rem; text-align: center; color: var(--orange); font-weight: bold; min-height: 18px; line-height: 1.4;}
 
         @media (min-width: 768px) {
-            body { justify-content: center; padding-top: 0; }
-            .center-wrapper { padding: 0; gap: 30px;}
-            .clock-widget { border-radius: 0; background: none; backdrop-filter: none; box-shadow: none; padding: 0; width: auto;}
-            .clock-time { font-size: 3.2rem;}
-            .clock-date { font-size: 1rem;}
-            .auth-card { padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05);}
-            .tab { font-size: 1rem; padding: 10px;}
-            .input-group label { font-size: 0.9rem;}
-            .input-group input { border-radius: 8px; font-size: 1rem; padding: 12px;}
-            .btn { font-size: 1rem; padding: 14px; border-radius: 8px;}
-            
-            .weather-box { top: 25px; left: 25px; padding: 12px 20px; border-radius: 16px; gap: 12px;}
-            .weather-city { font-size: 14px;}
-            .weather-detail { font-size: 12px;}
-            .weather-temp { font-size: 22px; }
-            
-            .music-box { top: 25px; right: 25px; padding: 10px 18px; border-radius: 16px; gap: 12px;}
-            .music-status { font-size: 13px;}
-            .music-bars { gap: 3px; height: 14px; width: 22px;}
-            .music-bars .bar { width: 3px; border-radius: 2px;}
-            
-            /* 大屏同步位置 */
-            .game-btn { bottom: 25px; left: 25px; padding: 12px 20px; border-radius: 16px; }
-            
-            @keyframes bounceBars { 0% { height: 4px; } 100% { height: 14px; } }
-            
-            #wallpaper-widget { position: fixed; bottom: 25px; right: 25px; width: 220px; padding: 12px; margin: 0; text-align: center; }
-            #today-img { height: 130px;}
-            #wallpaper-widget p { font-size: 14px;}
-            #wallpaper-widget:hover { transform: translateY(-5px) scale(1.02); }
+            body { padding-top: 20vh; }
+            .clock-time { font-size: 4rem;}
+            .search-container input { padding: 25px 30px; font-size: 1.2rem;}
+            .music-box { top: 25px; right: 25px; left: auto;} /* 电脑端音乐放右上角 */
+            .user-widget { top: 80px; right: 25px; } /* 电脑端用户控制往下放一点 */
+            #wallpaper-widget { position: fixed; bottom: 25px; right: 25px; width: 220px; margin: 0; }
+            .game-btn { bottom: 25px; left: 25px; }
+            .weather-box { top: 25px; left: 25px; }
         }
     </style>
 </head>
@@ -125,26 +99,26 @@
     </div>
 
     <div class="music-box" id="musicBox" onclick="toggleMusic(event)">
-        <div class="music-status" id="musicStatus">点击播放音乐</div>
+        <div class="music-status" id="musicStatus">点击播放</div>
         <div class="music-bars" id="musicBars">
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
         </div>
     </div>
 
-    <a href="games.html" class="game-btn">
-        <span style="font-size: 18px;">🎮</span> 游戏大厅
-    </a>
-
-    <div class="center-wrapper">
-        <div class="clock-widget">
-            <div class="clock-time" id="clock-time">00:00:00</div>
-            <div class="clock-date" id="clock-date">读取中...</div>
+    <div class="user-widget">
+        <div id="loggedOutView">
+            <button class="btn-glass" onclick="openLoginModal()">🛡️ 登录授权</button>
         </div>
+        <div id="loggedInView" style="display: none;">
+            <div class="user-greeting">👋 <span id="displayUsername"></span></div>
+            <a href="dashboard.html" class="btn-glass btn-primary">💾 我的网盘</a>
+            <button class="btn-glass" onclick="doLogout()">退出</button>
+        </div>
+    </div>
 
-        <div class="auth-card">
+    <div class="modal-overlay" id="loginModal" onclick="closeLoginModal(event)">
+        <div class="auth-card" onclick="event.stopPropagation()">
+            <button class="close-modal" onclick="closeLoginModal(true)">&times;</button>
             <div class="tabs">
                 <div class="tab active" id="tabLogin" onclick="switchTab('login')">登录</div>
                 <div class="tab" id="tabRegister" onclick="switchTab('register')">注册账号</div>
@@ -159,133 +133,103 @@
             <div id="registerForm" style="display: none;">
                 <div class="input-group"><label>设置账号</label><input type="text" id="regUser" placeholder="起个名字"></div>
                 <div class="input-group"><label>设置密码</label><input type="password" id="regPwd" placeholder="设置密码"></div>
-                <button class="btn" onclick="doRegister()" style="background: #c0743a;">提交到云数据库</button>
+                <button class="btn" onclick="doRegister()" style="background: #c0743a;">注册网盘权限</button>
             </div>
             <div id="msg"></div>
         </div>
+    </div>
+
+    <div class="center-wrapper">
+        <div class="clock-widget">
+            <div class="clock-time" id="clock-time">00:00:00</div>
+            <div class="clock-date" id="clock-date">读取中...</div>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="向 AI 提问，或搜索任何知识..." onkeypress="handleEnter(event)">
+            <button onclick="executeSearch()">✨ 搜索</button>
+        </div>
 
         <div id="wallpaper-widget">
-            <p>今日必应壁纸</p>
+            <p style="margin: 0 0 6px 0; color: #666; font-weight: bold;">今日必应壁纸</p>
             <img id="today-img" src="" onclick="window.open(this.src)" alt="加载中...">
-            <a href="wallpapers.html">查看更多壁纸 &raquo;</a>
+            <a href="wallpapers.html" style="display:block; margin-top:8px; color:#007bff; text-decoration:none; font-weight:bold;">查看更多壁纸 &raquo;</a>
         </div>
     </div>
 
+    <a href="games.html" class="game-btn">
+        <span style="font-size: 18px;">🎮</span> 游戏大厅
+    </a>
+
     <script>
-        const audio = document.getElementById('bgm-player');
-        const musicBars = document.getElementById('musicBars');
-        const musicStatus = document.getElementById('musicStatus');
+        // --- 核心搜索功能 ---
+        function executeSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+            // 携带查询参数跳转到专属对话页面
+            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+        }
 
-        function toggleMusic(e) {
-            if (e) e.stopPropagation(); 
-            if (audio.paused) {
-                audio.play().then(() => {
-                    musicBars.classList.add('playing'); 
-                    musicStatus.innerText = '正在播放';
-                    musicStatus.style.color = '#3f6f6b';
-                }).catch(err => {
-                    musicStatus.innerText = '播放异常(找不到文件)';
-                    musicStatus.style.color = 'red';
-                });
+        function handleEnter(e) {
+            if (e.key === 'Enter') executeSearch();
+        }
+
+        // --- 登录状态更新控制 ---
+        function updateLoginState() {
+            const user = localStorage.getItem('currentUser');
+            if (user) {
+                document.getElementById('loggedOutView').style.display = 'none';
+                document.getElementById('loggedInView').style.display = 'flex';
+                document.getElementById('displayUsername').innerText = user;
             } else {
-                audio.pause();
-                musicBars.classList.remove('playing'); 
-                musicStatus.innerText = '已暂停播放';
-                musicStatus.style.color = '#666';
+                document.getElementById('loggedOutView').style.display = 'flex';
+                document.getElementById('loggedInView').style.display = 'none';
             }
         }
 
-        function startClock() {
-            const timeEl = document.getElementById('clock-time');
-            const dateEl = document.getElementById('clock-date');
-            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+        function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
+        function closeLoginModal(force) { if (force === true || !force.target) { document.getElementById('loginModal').style.display = 'none'; } else if (force.target.id === 'loginModal') { document.getElementById('loginModal').style.display = 'none'; } }
+
+        function doLogout() {
+            localStorage.removeItem('currentUser');
+            updateLoginState();
+        }
+
+        async function doLogin() {
+            const u = document.getElementById('loginUser').value;
+            const p = document.getElementById('loginPwd').value;
+            const msg = document.getElementById('msg');
+            msg.style.color = 'var(--orange)';
+            if(!u || !p) return msg.innerText = '账号和密码不能为空！';
             
-            function update() {
-                const now = new Date();
-                const h = String(now.getHours()).padStart(2, '0');
-                const min = String(now.getMinutes()).padStart(2, '0');
-                const s = String(now.getSeconds()).padStart(2, '0');
-                timeEl.innerText = `${h}:${min}:${s}`;
-                dateEl.innerText = `${now.getFullYear()}年${String(now.getMonth() + 1).padStart(2, '0')}月${String(now.getDate()).padStart(2, '0')}日 ${weekdays[now.getDay()]}`;
-            }
-            update();
-            setInterval(update, 1000); 
+            msg.innerText = '验证中...';
+            const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u, password: p }) });
+            const data = await res.json();
+            if (res.ok) {
+                msg.style.color = 'var(--success)'; msg.innerText = '✅ 登录成功！';
+                localStorage.setItem('currentUser', u);
+                setTimeout(() => {
+                    closeLoginModal(true);
+                    updateLoginState(); // 🌟 不再跳转，直接在当前页面刷新右上角状态！
+                }, 800);
+            } else { msg.innerText = data.error || '登录失败'; }
         }
 
-        async function initWeather() {
-            async function renderWeather(lat, lon, city) {
-                try {
-                    if (!city) {
-                        const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=zh`);
-                        const geoData = await geoRes.json();
-                        city = geoData.city || geoData.locality || geoData.principalSubdivision || "当前位置";
-                        city = city.replace('市', '');
-                    }
-                    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-                    const weatherData = await weatherRes.json();
-                    const temp = Math.round(weatherData.current_weather.temperature);
-                    const code = weatherData.current_weather.weathercode;
-
-                    let icon = "☀️", desc = "晴朗";
-                    if (code === 0) { icon = "☀️"; desc = "晴朗"; }
-                    else if (code >= 1 && code <= 3) { icon = "☁️"; desc = "多云"; }
-                    else if (code >= 45 && code <= 48) { icon = "🌫️"; desc = "雾霾"; }
-                    else if (code >= 51 && code <= 67) { icon = "🌧️"; desc = "降雨"; }
-                    else if (code >= 71 && code <= 77) { icon = "❄️"; desc = "降雪"; }
-                    else if (code >= 95) { icon = "⛈️"; desc = "雷阵雨"; }
-
-                    document.getElementById('weatherIcon').innerText = icon;
-                    document.getElementById('weatherLocation').innerText = city;
-                    document.getElementById('weatherDetail').innerText = desc;
-                    document.getElementById('weatherTemp').innerText = `${temp}°C`;
-                } catch (err) { fallbackWeather(); }
-            }
-
-            async function fallbackWeather() {
-                try {
-                    const res = await fetch('/api/weather');
-                    const data = await res.json();
-                    if (data.success) {
-                        document.getElementById('weatherIcon').innerText = data.icon;
-                        document.getElementById('weatherLocation').innerText = data.city;
-                        document.getElementById('weatherDetail').innerText = data.desc;
-                        document.getElementById('weatherTemp').innerText = `${data.temp}°C`;
-                    }
-                } catch (e) {
-                    document.getElementById('weatherIcon').innerText = "☁️";
-                    document.getElementById('weatherLocation').innerText = "地球";
-                    document.getElementById('weatherDetail').innerText = "无信号";
-                    document.getElementById('weatherTemp').innerText = "--°C";
-                }
-            }
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => { renderWeather(position.coords.latitude, position.coords.longitude, ""); },
-                    (error) => { fallbackWeather(); },
-                    { timeout: 6000, enableHighAccuracy: true }
-                );
-            } else { fallbackWeather(); }
+        async function doRegister() {
+            const u = document.getElementById('regUser').value;
+            const p = document.getElementById('regPwd').value;
+            const msg = document.getElementById('msg');
+            if(!u || !p) return msg.innerText = '不能为空！';
+            const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username:u, password:p }) });
+            if (res.ok) {
+                msg.style.color = 'var(--success)'; msg.innerText = '🎉 注册成功！即将跳转登录。';
+                setTimeout(() => switchTab('login'), 1500);
+            } else { msg.innerText = '注册失败'; }
         }
 
-        window.onload = function() {
-            const currentUser = localStorage.getItem('currentUser') || '游客';
-            fetch('/api/record-visitor', { method: 'POST', body: currentUser }).catch(err => console.log(err));
-
-            startClock();  
-            initWeather(); 
-
-            fetch('/api/get-public-wallpapers?type=latest')
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.img_url) { document.getElementById('today-img').src = data.img_url; } 
-                    else { document.getElementById('today-img').src = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN"; }
-                }).catch(() => { document.getElementById('today-img').src = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN"; });
-        };
-
-        function switchTab(type) {
+        function switchTab(t) {
             document.getElementById('msg').innerText = '';
-            if(type === 'login') {
+            if(t === 'login') {
                 document.getElementById('tabLogin').classList.add('active'); document.getElementById('tabRegister').classList.remove('active');
                 document.getElementById('loginForm').style.display = 'block'; document.getElementById('registerForm').style.display = 'none';
             } else {
@@ -294,35 +238,50 @@
             }
         }
 
-        async function doRegister() {
-            const username = document.getElementById('regUser').value;
-            const password = document.getElementById('regPwd').value;
-            const msg = document.getElementById('msg');
-            msg.style.color = 'var(--orange)';
-            if(!username || !password) return msg.innerText = '账号和密码不能为空！';
-            const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-            const data = await res.json();
-            if (res.ok) {
-                msg.style.color = 'var(--success)'; msg.innerText = '🎉 注册成功！即将自动跳转登录。';
-                document.getElementById('regUser').value = ''; document.getElementById('regPwd').value = '';
-                setTimeout(() => { switchTab('login'); }, 1500);
-            } else { msg.innerText = data.error || '注册失败'; }
+        // --- 时钟、天气、音乐等基础功能 ---
+        const audio = document.getElementById('bgm-player');
+        function toggleMusic(e) {
+            if (e) e.stopPropagation(); 
+            if (audio.paused) {
+                audio.play().then(() => {
+                    document.getElementById('musicBars').classList.add('playing'); 
+                    document.getElementById('musicStatus').innerText = '正在播放';
+                }).catch(() => { document.getElementById('musicStatus').innerText = '无音乐文件'; });
+            } else {
+                audio.pause();
+                document.getElementById('musicBars').classList.remove('playing'); 
+                document.getElementById('musicStatus').innerText = '已暂停';
+            }
         }
 
-        async function doLogin() {
-            const username = document.getElementById('loginUser').value;
-            const password = document.getElementById('loginPwd').value;
-            const msg = document.getElementById('msg');
-            msg.style.color = 'var(--orange)';
-            if(!username || !password) return msg.innerText = '账号和密码不能为空！';
-            const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-            const data = await res.json();
-            if (res.ok) {
-                msg.style.color = 'var(--success)'; msg.innerText = '✅ 验证通过！正在进入控制台...';
-                localStorage.setItem('currentUser', username);
-                setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
-            } else { msg.innerText = data.error || '登录失败'; }
+        function startClock() {
+            const timeEl = document.getElementById('clock-time'), dateEl = document.getElementById('clock-date');
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            setInterval(() => {
+                const now = new Date();
+                timeEl.innerText = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+                dateEl.innerText = `${now.getFullYear()}年${String(now.getMonth() + 1).padStart(2,'0')}月${String(now.getDate()).padStart(2,'0')}日 ${weekdays[now.getDay()]}`;
+            }, 1000);
         }
+
+        window.onload = function() {
+            updateLoginState(); // 初始化右上角状态
+            startClock();
+            
+            // 天气
+            if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => {
+                fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true`)
+                .then(r=>r.json()).then(d => {
+                    document.getElementById('weatherTemp').innerText = Math.round(d.current_weather.temperature) + '°C';
+                    document.getElementById('weatherDetail').innerText = d.current_weather.weathercode < 3 ? '晴好' : '多云/雨';
+                }).catch(()=>{});
+            });
+
+            // 壁纸
+            fetch('/api/get-public-wallpapers?type=latest').then(r=>r.json()).then(d=>{
+                document.getElementById('today-img').src = (d && d.img_url) ? d.img_url : "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN";
+            }).catch(()=>{ document.getElementById('today-img').src = "https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN"; });
+        };
     </script>
 </body>
 </html>
