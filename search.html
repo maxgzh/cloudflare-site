@@ -120,11 +120,17 @@
             const loadingBubble = appendMessage('ai', '', true);
 
             try {
-                // 呼叫 Cloudflare 后端接口，不暴露你的 API Key
+                // 🌟 核心修改：获取当前登录状态，没登录就是游客
+                const currentUser = localStorage.getItem('currentUser') || '游客';
+
+                // 呼叫 Cloudflare 后端接口
                 const response = await fetch('/api/search-ai', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: chatHistory })
+                    body: JSON.stringify({ 
+                        username: currentUser,       // 把身份传给后端
+                        messages: chatHistory        // 完整的对话历史
+                    })
                 });
                 
                 const data = await response.json();
