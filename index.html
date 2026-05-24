@@ -47,11 +47,11 @@
         .music-bars.playing .bar:nth-child(4) { animation-duration: 1.7s; }
         @keyframes bounceBars { 0% { height: 3px; } 100% { height: 11px; } }
 
-        /* 🎮 游戏大厅按钮：完全照抄天气的 absolute 代码，只改位置到底部！ */
+        /* 🎮 游戏大厅按钮：完全照抄上面盒子的 absolute 代码，完美停靠左下角 */
         .game-btn { 
             position: absolute; 
-            bottom: 15px; 
-            left: 15px; 
+            bottom: 20px; 
+            left: 20px; 
             background: rgba(255, 255, 255, 0.4); 
             backdrop-filter: blur(10px); 
             -webkit-backdrop-filter: blur(10px); 
@@ -71,7 +71,8 @@
         }
         .game-btn:active { opacity: 0.8; transform: scale(0.95); }
 
-        #wallpaper-widget { width: 100%; background: rgba(255,255,255,0.75); padding: 10px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.03); backdrop-filter: blur(6px); text-align: center; font-size: 12px; border: 1px solid #eee; transition: all 0.3s; box-sizing: border-box; margin-bottom: 30px;}
+        /* 🚨 核心排版修复：底部留出 90px 空白（margin-bottom: 90px;），专门给游戏按钮腾出位置，坚决不挡壁纸！ */
+        #wallpaper-widget { width: 100%; background: rgba(255,255,255,0.75); padding: 10px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.03); backdrop-filter: blur(6px); text-align: center; font-size: 12px; border: 1px solid #eee; transition: all 0.3s; box-sizing: border-box; margin-bottom: 90px;}
         #wallpaper-widget p { margin: 0 0 6px 0; color: #666; font-weight: bold; font-size: 13px;}
         #today-img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.04); background: #eee;}
         #wallpaper-widget a { display: block; margin-top: 8px; color: #007bff; text-decoration: none; font-weight: bold; font-size: 13px;}
@@ -98,7 +99,7 @@
             .music-bars { gap: 3px; height: 14px; width: 22px;}
             .music-bars .bar { width: 3px; border-radius: 2px;}
             
-            /* 大屏同步微调位置 */
+            /* 大屏同步位置 */
             .game-btn { bottom: 25px; left: 25px; padding: 12px 20px; border-radius: 16px; }
             
             @keyframes bounceBars { 0% { height: 4px; } 100% { height: 14px; } }
