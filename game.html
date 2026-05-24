@@ -117,7 +117,7 @@
             logScreen.scrollTop = logScreen.scrollHeight; 
         }
 
-        // 🌟 核心引擎：呼叫 DeepSeek AI 算账并组装优雅的中文结算反馈
+        // 🌟 核心引擎
         async function doAction(actionName) {
             btns.forEach(b => b.disabled = true);
             addLog(`> 玩家行动：${actionName}`);
@@ -134,24 +134,26 @@
                 let reply = data.reply;
                 let cleanReply = reply;
 
-                // 提取数值，隐式计算
-                const match = reply.match(/\[MONEY:([+-]?\d+),\s*INV:([+-]?\d+),\s*REP:([+-]?\d+)\]/i);
+                // 🌟 【防弹级万能正则】：无视全角半角冒号、中文英文逗号、任意数量空格！
+                const match = reply.match(/\[\s*MONEY\s*[:：]\s*([+-]?\d+)\s*[,，]\s*INV\s*[:：]\s*([+-]?\d+)\s*[,，]\s*REP\s*[:：]\s*([+-]?\d+)\s*\]/i);
+                
                 if (match) {
                     const m_change = parseInt(match[1]);
                     const i_change = parseInt(match[2]);
                     const r_change = parseInt(match[3]);
 
+                    // 正确计算后台数值
                     state.money += m_change;
                     state.inventory += i_change;
                     state.reputation += r_change;
                     if(state.money < 0) state.money = 0;
                     if(state.inventory < 0) state.inventory = 0;
 
-                    // 翻译：在这里将难看的英文转义为高颜值的中文结算通知单
+                    // 翻译：组装高颜值的中文结算通知单
                     const feedbackText = `\n\n📊 【行动结算】 资金 ${m_change >= 0 ? '+'+m_change : m_change} | 库存 ${i_change >= 0 ? '+'+i_change : i_change} | 名声 ${r_change >= 0 ? '+'+r_change : r_change}`;
                     
-                    // 用中文面板平滑替换掉原始的底层指令文本
-                    cleanReply = reply.replace(/\[MONEY:[^\]]+\]/i, feedbackText).trim();
+                    // 用中文面板平滑替换掉原始的底层指令文本（同样使用防弹级正则切除）
+                    cleanReply = reply.replace(/\[\s*MONEY[\s\S]*?\]/i, feedbackText).trim();
                 }
                 
                 addLog(cleanReply);
