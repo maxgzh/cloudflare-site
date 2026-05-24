@@ -2,41 +2,51 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>赛博小店 - AI经营模拟</title>
     <style>
         :root { --sand: #f4ecdf; --coal: #2f251c; --accent: #c0743a; }
-        body { margin: 0; padding: 20px; min-height: 100vh; background: var(--coal); color: var(--sand); font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; align-items: center; }
+        body { margin: 0; padding: 15px; min-height: 100vh; background: var(--coal); color: var(--sand); font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;}
         
-        .header { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--sand); padding-bottom: 10px; }
-        .back-btn { color: var(--accent); text-decoration: none; font-weight: bold; border: 1px solid var(--accent); padding: 5px 10px; border-radius: 4px; }
+        .header { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--sand); padding-bottom: 10px; }
+        .header h2 { margin: 0; font-size: 1.2rem; }
+        .back-btn { color: var(--accent); text-decoration: none; font-weight: bold; border: 1px solid var(--accent); padding: 6px 10px; border-radius: 4px; font-size: 0.85rem;}
         
-        .dashboard { width: 100%; max-width: 800px; display: flex; justify-content: space-between; background: rgba(244, 236, 223, 0.1); padding: 15px; border-radius: 8px; box-sizing: border-box; font-size: 18px; font-weight: bold; }
+        /* 📱 手机优先的响应式布局 */
+        .dashboard { width: 100%; max-width: 800px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: rgba(244, 236, 223, 0.1); padding: 12px; border-radius: 8px; box-sizing: border-box; font-size: 0.9rem; font-weight: bold; }
         .dashboard span { color: var(--accent); }
         
-        .log-screen { width: 100%; max-width: 800px; height: 350px; background: #1a140f; border: 1px solid var(--sand); margin-top: 20px; overflow-y: auto; padding: 15px; box-sizing: border-box; line-height: 1.5; border-radius: 8px; }
+        .log-screen { width: 100%; max-width: 800px; height: 350px; background: #1a140f; border: 1px solid var(--sand); margin-top: 15px; overflow-y: auto; padding: 12px; box-sizing: border-box; line-height: 1.5; border-radius: 8px; scroll-behavior: smooth; font-size: 0.9rem;}
         .log-entry { margin-bottom: 10px; border-left: 3px solid var(--accent); padding-left: 10px; }
-        .log-sys { color: #888; font-size: 0.9em; }
+        .log-sys { color: #888; font-size: 0.85em; }
         
-        .controls { width: 100%; max-width: 800px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
-        button { background: var(--sand); color: var(--coal); border: none; padding: 15px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; transition: 0.2s; font-family: inherit;}
+        /* 📱 手机上默认竖排按钮 */
+        .controls { width: 100%; max-width: 800px; display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        button { background: var(--sand); color: var(--coal); border: none; padding: 15px; font-size: 1rem; font-weight: bold; cursor: pointer; border-radius: 8px; transition: 0.2s; font-family: inherit;}
         button:hover { background: var(--accent); color: white; }
         button:disabled { background: #555; color: #888; cursor: not-allowed; }
         
-        /* 存档登录弹窗 */
-        #auth-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-card { background: var(--sand); color: var(--coal); padding: 30px; border-radius: 12px; width: 300px; text-align: center; }
-        .modal-card input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px;}
+        #auth-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px;}
+        .modal-card { background: var(--sand); color: var(--coal); padding: 25px; border-radius: 12px; width: 100%; max-width: 300px; text-align: center; box-sizing: border-box;}
+        .modal-card input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px;}
         .modal-card p { font-size: 12px; color: #666; margin-bottom: 15px;}
+
+        /* 💻 屏幕大于 600px（电脑/平板）时自动切换为横排 */
+        @media (min-width: 600px) {
+            .header h2 { font-size: 1.5rem; }
+            .dashboard { font-size: 1.1rem; padding: 15px; flex-wrap: nowrap;}
+            .controls { grid-template-columns: repeat(3, 1fr); margin-top: 20px;}
+            .log-screen { height: 400px; font-size: 1rem; padding: 15px;}
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h2>🏪 赛博小店系统 v1.0</h2>
-        <div>
-            <button class="back-btn" onclick="openSaveModal()" style="background:var(--accent); color:var(--sand);">💾 存档并互通</button>
-            <a href="index.html" class="back-btn" style="margin-left: 10px;">&laquo; 撤退</a>
+        <div style="display: flex; gap: 8px;">
+            <button class="back-btn" onclick="openSaveModal()" style="background:var(--accent); color:var(--sand); padding:6px 10px; font-size: 0.85rem;">💾 存档同步</button>
+            <a href="games.html" class="back-btn">&laquo; 撤退</a>
         </div>
     </div>
 
@@ -52,8 +62,8 @@
     </div>
 
     <div class="controls">
-        <button id="btn-buy" onclick="doAction('花钱进货，不管质量如何')">📦 黑市进货 (花费金钱)</button>
-        <button id="btn-sell" onclick="doAction('疯狂推销库存商品')">💰 疯狂推销 (消耗库存)</button>
+        <button id="btn-buy" onclick="doAction('花钱进货，不管质量如何')">📦 黑市进货 (花钱)</button>
+        <button id="btn-sell" onclick="doAction('疯狂推销库存商品')">💰 疯狂推销 (清空库存)</button>
         <button id="btn-rand" onclick="doAction('在店门口举办奇怪的营销活动')">🎪 搞事营销 (随机事件)</button>
     </div>
 
@@ -69,19 +79,16 @@
     </div>
 
     <script>
-        // 初始状态
         let state = { day: 1, money: 1000, inventory: 0, reputation: 10 };
         const logScreen = document.getElementById('logScreen');
         const btns = document.querySelectorAll('.controls button');
 
-        // 初始化加载本地记录（如果有）
         window.onload = async function() {
             const savedUser = localStorage.getItem('currentUser');
             if (savedUser) {
                 document.getElementById('auth-user').value = savedUser;
                 addLog(`检测到中转站登录痕迹：[${savedUser}]，点击存档可同步数据。`, true);
                 
-                // 尝试从云端拉取存档
                 const res = await fetch('/api/game-load', { method: 'POST', body: JSON.stringify({username: savedUser}) });
                 const data = await res.json();
                 if (data.success) {
@@ -105,10 +112,9 @@
             div.className = isSys ? 'log-entry log-sys' : 'log-entry';
             div.innerText = text;
             logScreen.appendChild(div);
-            logScreen.scrollTop = logScreen.scrollHeight;
+            logScreen.scrollTop = logScreen.scrollHeight; 
         }
 
-        // 🌟 核心引擎：呼叫 DeepSeek AI
         async function doAction(actionName) {
             btns.forEach(b => b.disabled = true);
             addLog(`> 玩家行动：${actionName}`);
@@ -122,11 +128,8 @@
                 });
                 const data = await res.json();
                 
-                // 解析 AI 返回的内容和数值变化
-                const reply = data.reply;
-                addLog(reply);
+                let reply = data.reply;
 
-                // 正则提取 [MONEY:+10, INV:-5, REP:0]
                 const match = reply.match(/\[MONEY:([+-]?\d+),\s*INV:([+-]?\d+),\s*REP:([+-]?\d+)\]/i);
                 if (match) {
                     state.money += parseInt(match[1]);
@@ -135,6 +138,9 @@
                     if(state.money < 0) state.money = 0;
                     if(state.inventory < 0) state.inventory = 0;
                 }
+                
+                const cleanReply = reply.replace(/\[MONEY:[^\]]+\]/i, '').trim();
+                addLog(cleanReply);
                 
                 state.day += 1;
                 updateUI();
@@ -145,7 +151,6 @@
             btns.forEach(b => b.disabled = false);
         }
 
-        // 存档相关逻辑
         function openSaveModal() {
             document.getElementById('auth-modal').style.display = 'flex';
         }
@@ -167,7 +172,7 @@
 
             if(data.success) {
                 addLog(`✅ 记忆上传成功！账号 [${user}] 进度已保存。`, true);
-                localStorage.setItem('currentUser', user); // 同步主站登录状态
+                localStorage.setItem('currentUser', user); 
             } else {
                 addLog(`❌ 上传失败：${data.error}`, true);
             }
