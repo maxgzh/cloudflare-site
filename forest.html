@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>迷雾森林 - 多人合作冒险</title>
+    <style>
+        :root { --sand: #f4ecdf; --coal: #2f251c; --accent: #c0743a; }
+        body { margin: 0; padding: 12px; min-height: 100vh; background: var(--coal); color: var(--sand); font-family: 'Courier New', Courier, sans-serif; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;}
+        
+        .header { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--sand); padding-bottom: 10px; }
+        .header h2 { margin: 0; font-size: 1.15rem; }
+        .back-btn { color: var(--accent); text-decoration: none; font-weight: bold; border: 1px solid var(--accent); padding: 5px 10px; border-radius: 4px; font-size: 0.85rem; background: transparent;}
+        
+        /* 手机端自适应面板 */
+        .dashboard { width: 100%; max-width: 800px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: rgba(244, 236, 223, 0.1); padding: 12px; border-radius: 8px; box-sizing: border-box; font-size: 0.9rem; font-weight: bold; }
+        .dashboard span { color: var(--accent); }
+        
+        .log-screen { width: 100%; max-width: 800px; height: 360px; background: #1a140f; border: 1px solid var(--sand); margin-top: 12px; overflow-y: auto; padding: 12px; box-sizing: border-box; line-height: 1.6; border-radius: 8px; font-size: 0.9rem; scroll-behavior: smooth;}
+        .log-entry { margin-bottom: 12px; border-left: 3px solid var(--accent); padding-left: 10px; white-space: pre-wrap; }
+        .log-sys { color: #888; font-size: 0.85em; }
+        
+        /* 📱 手机端默认全宽大按钮竖排堆叠 */
+        .controls { width: 100%; max-width: 800px; display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 12px; }
+        button { background: var(--sand); color: var(--coal); border: none; padding: 14px; font-size: 0.95rem; font-weight: bold; cursor: pointer; border-radius: 8px; font-family: inherit; transition: 0.2s;}
+        button:hover, button:active { background: var(--accent); color: white; }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; }
+        
+        #join-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px;}
+        .modal-card { background: var(--sand); color: var(--coal); padding: 25px; border-radius: 12px; width: 100%; max-width: 300px; text-align: center; box-sizing: border-box;}
+        .modal-card input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px;}
+
+        /* 💻 电脑大屏自适应方案 */
+        @media (min-width: 650px) {
+            body { padding: 25px; }
+            .header h2 { font-size: 1.5rem; }
+            .header .back-btn { font-size: 0.95rem; padding: 6px 12px; }
+            .dashboard { font-size: 1.1rem; padding: 16px; flex-wrap: nowrap; gap: 0;}
+            .log-screen { height: 420px; font-size: 1rem; padding: 16px; margin-top: 18px;}
+            .controls { grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px;}
+            button { padding: 16px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>🌲 迷雾森林 - 多人合作冒险</h2>
+        <a href="games.html" class="back-btn">&laquo; 返回大厅</a>
+    </div>
+
+    <div class="dashboard">
+        <div>房间ID: <span id="ui-room">未连接</span></div>
+        <div>职业: <span id="ui-job">-</span></div>
+        <div>队伍血量: <span id="ui-hp">100</span></div>
+        <div>进度: <span id="ui-progress">0/30</span></div>
+    </div>
+
+    <div class="log-screen" id="logScreen">
+        <div class="log-entry log-sys">【系统】正在连接迷雾森林服务器...</div>
+    </div>
+
+    <div class="controls">
+        <button id="btn-start" onclick="sendAction('start_game')">🚀 开始探险</button>
+        <button id="btn-go" onclick="sendAction('go前进')">👣 前进探索</button>
+        <button id="btn-hide" onclick="sendAction('hide躲藏')">🛡️ 躲藏避险</button>
+        <button id="btn-fight" onclick="sendAction('fight战斗')">⚔️ 战斗对抗</button>
+    </div>
+
+    <!-- 加入房间弹窗 -->
+    <div id="join-modal">
+        <div class="modal-card">
+            <h3>🌲 加入/创建探险队</h3>
+            <p style="font-size: 12px; color: #555; margin: 5px 0 12px;">输入房间ID加入队伍，留空则创建新房间</p>
+            <input type="text" id="room-id-input" placeholder="房间ID（可选）">
+            <button onclick="connectServer()" style="width: 100%; background: var(--coal); color: var(--sand); margin-top: 10px;">进入森林</button>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        const logScreen = document.getElementById('logScreen');
+        const btns = document.querySelectorAll('.controls button');
+
+        // 连接服务器（替换成你的公网IP或域名）
+        function connectServer() {
+            const roomId = document.getElementById('room-id-input').value.trim() || "new";
+            document.getElementById('join-modal').style.display = 'none';
+
+            // 你的服务端WebSocket地址
+            const wsUrl = `ws://101.200.2.141:8010/ws/forest/${roomId}`;
+            ws = new WebSocket(wsUrl);
+
+            // 连接打开
+            ws.onopen = function() {
+                addLog("✅ 已连接到迷雾森林服务器！", true);
+            };
+
+            // 接收消息
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                handleMessage(data);
+            };
+
+            // 连接关闭
+            ws.onclose = function() {
+                addLog("❌ 与服务器断开连接，请刷新页面重试", true);
+                btns.forEach(b => b.disabled = true);
+            };
+
+            // 连接错误
+            ws.onerror = function(err) {
+                addLog("❌ 服务器连接失败，请检查端口或网络", true);
+                document.getElementById('join-modal').style.display = 'flex';
+            };
+        }
+
+        // 处理服务端消息
+        function handleMessage(data) {
+            switch(data.type) {
+                case "new_room":
+                case "join_room":
+                    // 更新UI信息
+                    document.getElementById('ui-room').innerText = data.rid;
+                    document.getElementById('ui-job').innerText = `${data.job}（${data.skill}）`;
+                    addLog(`🏠 房间ID: ${data.rid}`, true);
+                    addLog(`👤 你的职业: ${data.job} - ${data.skill}`, true);
+                    break;
+
+                case "notify":
+                    addLog(data.data);
+                    break;
+
+                case "tip":
+                    addLog(`💡 ${data.msg}`, true);
+                    break;
+
+                case "error":
+                    addLog(`❌ ${data.msg}`, true);
+                    break;
+            }
+        }
+
+        // 发送行动指令
+        function sendAction(cmd) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                addLog("❌ 未连接到服务器", true);
+                return;
+            }
+
+            if (cmd === "start_game") {
+                ws.send(JSON.stringify({ cmd: "start_game" }));
+                addLog("🚀 全队开始探险！", true);
+            } else {
+                ws.send(JSON.stringify({ cmd: "do_action", action: cmd }));
+                addLog(`> 玩家行动: ${cmd}`);
+            }
+
+            // 临时禁用按钮，防止重复点击
+            btns.forEach(b => b.disabled = true);
+            setTimeout(() => btns.forEach(b => b.disabled = false), 500);
+        }
+
+        // 添加日志
+        function addLog(text, isSys = false) {
+            const div = document.createElement('div');
+            div.className = isSys ? 'log-entry log-sys' : 'log-entry';
+            div.innerText = text;
+            logScreen.appendChild(div);
+            logScreen.scrollTop = logScreen.scrollHeight; 
+        }
+
+        // 页面加载时显示弹窗
+        window.onload = function() {
+            document.getElementById('join-modal').style.display = 'flex';
+        };
+    </script>
+</body>
+</html>
