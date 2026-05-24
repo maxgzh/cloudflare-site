@@ -29,11 +29,13 @@
         .btn:hover, .btn:active { opacity: 0.9;}
         #msg { margin-top: 15px; font-size: 0.8rem; text-align: center; color: var(--orange); font-weight: bold; min-height: 18px; line-height: 1.4;}
 
+        /* 天气盒子：绝对定位左上角 */
         .weather-box { position: absolute; top: 15px; left: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20;}
         .weather-city { font-weight: bold; color: var(--orange); font-size: 12px;}
         .weather-detail { font-size: 11px; color: #666; margin-top: 1px;}
         .weather-temp { font-size: 16px; font-weight: bold; color: var(--coal); }
 
+        /* 音乐盒子：绝对定位右上角 */
         .music-box { position: absolute; top: 15px; right: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20; cursor: pointer; user-select: none;}
         .music-status { font-weight: bold; color: #777; font-size: 12px;}
         .music-bars { display: flex; align-items: flex-end; gap: 2.5px; height: 11px;}
@@ -45,19 +47,40 @@
         .music-bars.playing .bar:nth-child(4) { animation-duration: 1.7s; }
         @keyframes bounceBars { 0% { height: 3px; } 100% { height: 11px; } }
 
-        /* 🎮 全新排版的游戏大厅入口卡片 */
-        .game-lobby-card { width: 100%; background: rgba(255,255,255,0.85); padding: 15px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.04); backdrop-filter: blur(10px); text-align: center; text-decoration: none; color: var(--coal); font-weight: bold; font-size: 1.05rem; border: 1px solid var(--soft-line); transition: all 0.3s; box-sizing: border-box; display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 5px; }
-        .game-lobby-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); background: white;}
-        .game-lobby-card span { font-size: 1.3rem; }
+        /* 🎮 游戏入口：完全参考天气盒子的透明毛玻璃代码，固定在左下角 */
+        .game-btn { 
+            position: fixed; 
+            bottom: 25px; 
+            left: 20px; 
+            background: rgba(255, 255, 255, 0.4); 
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px); 
+            padding: 10px 16px; 
+            border-radius: 12px; 
+            border: 1px solid rgba(255,255,255,0.4); 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            z-index: 100; /* 保证层级靠前，绝不被挡 */
+            text-decoration: none; 
+            color: var(--orange); 
+            font-weight: bold; 
+            font-size: 14px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .game-btn:active { opacity: 0.8; transform: scale(0.95); }
 
-        #wallpaper-widget { width: 100%; background: rgba(255,255,255,0.75); padding: 10px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.03); backdrop-filter: blur(6px); text-align: center; font-size: 12px; border: 1px solid #eee; transition: all 0.3s; box-sizing: border-box; margin-bottom: 30px;}
+        /* 壁纸组件增加 margin-bottom: 80px，防止手机滑到底部时被悬浮按钮遮住 */
+        #wallpaper-widget { width: 100%; background: rgba(255,255,255,0.75); padding: 10px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.03); backdrop-filter: blur(6px); text-align: center; font-size: 12px; border: 1px solid #eee; transition: all 0.3s; box-sizing: border-box; margin-bottom: 80px;}
         #wallpaper-widget p { margin: 0 0 6px 0; color: #666; font-weight: bold; font-size: 13px;}
         #today-img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.04); background: #eee;}
         #wallpaper-widget a { display: block; margin-top: 8px; color: #007bff; text-decoration: none; font-weight: bold; font-size: 13px;}
 
         @media (min-width: 768px) {
             body { justify-content: center; padding-top: 0; }
-            .center-wrapper { padding: 0; gap: 25px;}
+            .center-wrapper { padding: 0; gap: 30px;}
             .clock-widget { border-radius: 0; background: none; backdrop-filter: none; box-shadow: none; padding: 0; width: auto;}
             .clock-time { font-size: 3.2rem;}
             .clock-date { font-size: 1rem;}
@@ -76,6 +99,7 @@
             .music-bars .bar { width: 3px; border-radius: 2px;}
             @keyframes bounceBars { 0% { height: 4px; } 100% { height: 14px; } }
             
+            .game-btn { left: 25px; bottom: 25px; }
             #wallpaper-widget { position: fixed; bottom: 25px; right: 25px; width: 220px; padding: 12px; margin: 0; text-align: center; }
             #today-img { height: 130px;}
             #wallpaper-widget p { font-size: 14px;}
@@ -106,6 +130,10 @@
         </div>
     </div>
 
+    <a href="games.html" class="game-btn">
+        <span style="font-size: 18px;">🎮</span> 游戏大厅
+    </a>
+
     <div class="center-wrapper">
         <div class="clock-widget">
             <div class="clock-time" id="clock-time">00:00:00</div>
@@ -131,10 +159,6 @@
             </div>
             <div id="msg"></div>
         </div>
-
-        <a href="lobby.html" class="game-lobby-card">
-            <span>🎮</span> 智能游戏大厅入口
-        </a>
 
         <div id="wallpaper-widget">
             <p>今日必应壁纸</p>
