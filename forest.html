@@ -190,8 +190,8 @@
             const roomId = roomInput.value.trim() || "new";
             document.getElementById('join-modal').style.display = 'none';
 
-            // 🌟 核心治本修改：改为走通过 Cloudflare 安全代理的域名（使用标准 wss 443 加密协议）
-            const wsUrl = `wss://gameapi.maxgzh.xyz/ws/forest/${roomId}`;
+            // 🌟 核心治本修改：关闭 Cloudflare 小黄云代理后，直接通过二级域名直连 8010 开放端口
+            const wsUrl = `ws://gameapi.maxgzh.xyz:8010/ws/forest/${roomId}`;
             
             try {
                 ws = new WebSocket(wsUrl);
