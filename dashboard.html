@@ -7,9 +7,10 @@
     <style>
         body { font-family: sans-serif; background: #f4ecdf; margin: 0; padding: 20px; color: #2f251c; }
         .container { max-width: 700px; margin: 40px auto; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        h1 { margin-top: 0; color: #c0743a; }
+        .header-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;}
+        h1 { margin: 0; color: #c0743a; }
         .upload-section { background: #efe1cb; padding: 20px; border-radius: 12px; margin: 20px 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
-        .btn { background: #2f251c; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn { background: #2f251c; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block;}
         .btn:hover { opacity: 0.9; }
         .file-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); }
         .file-link { color: #c0743a; text-decoration: none; font-weight: bold; margin-right: 10px; cursor: pointer;}
@@ -21,14 +22,12 @@
         .preview-img { max-width: 100%; max-height: 200px; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         audio { width: 100%; margin-top: 5px; }
 
-        /* 🌟 新增：画廊模式样式 */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; display: none; margin-top: 15px; }
         .gallery-item { position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.2s; background: #eee;}
         .gallery-item:hover { transform: scale(1.03); }
         .gallery-item img { width: 100%; height: 140px; object-fit: cover; display: block; }
         .gallery-item .overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: white; padding: 6px 10px; font-size: 11px; font-weight: bold; backdrop-filter: blur(4px); }
         
-        /* 🌟 全屏大图查看器 */
         #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 9999; flex-direction: column; }
         #lightbox img { max-width: 90%; max-height: 80vh; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
         #lightbox .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 30px; cursor: pointer; font-weight: bold; }
@@ -37,8 +36,13 @@
 <body>
 
 <div class="container">
-    <a href="#" style="float: right; color: #888; text-decoration: none;" onclick="logout()">退出登录</a>
-    <h1 id="welcome-title">正在加载...</h1>
+    <div class="header-area">
+        <h1 id="welcome-title">正在加载...</h1>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <a href="index.html" class="btn" style="background: #3f6f6b;">🏠 返回中转站</a>
+            <a href="#" style="color: #888; text-decoration: none; font-weight: bold;" onclick="logout()">退出登录</a>
+        </div>
+    </div>
     
     <div class="path-nav">
         <div>当前路径: <span id="currentPathDisplay">/</span></div>
@@ -63,11 +67,8 @@
     <p id="uploadStatus" style="font-size: 12px; color: #666; font-weight: bold;"></p>
 
     <h3>我的私有云盘</h3>
-    
     <div id="fileList">正在加载列表...</div>
-    
     <div id="galleryGrid" class="gallery-grid"></div>
-
 </div>
 
 <div id="lightbox" onclick="closeLightbox()">
@@ -79,8 +80,8 @@
 <script>
     const currentUser = localStorage.getItem('currentUser');
     let currentPath = '/'; 
-    let allFiles = []; // 保存当前目录的所有文件数据
-    let isGalleryMode = false; // 当前是否为画廊模式
+    let allFiles = []; 
+    let isGalleryMode = false; 
 
     if (!currentUser) { window.location.href = 'index.html'; } 
     else {
@@ -89,7 +90,7 @@
     }
 
     function formatBytes(bytes) {
-        if (bytes === 0) return '0 Bytes';
+        if (bytes === 0 || !bytes) return '未知大小';
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -98,12 +99,15 @@
 
     async function loadMyFiles() {
         document.getElementById('currentPathDisplay').innerText = currentPath;
-        const res = await fetch(`/api/get-wallpapers?username=${encodeURIComponent(currentUser)}&folder_path=${encodeURIComponent(currentPath)}`);
-        allFiles = await res.json();
-        renderView(); 
+        try {
+            const res = await fetch(`/api/get-wallpapers?username=${encodeURIComponent(currentUser)}&folder_path=${encodeURIComponent(currentPath)}`);
+            allFiles = await res.json();
+            renderView(); 
+        } catch (e) {
+            document.getElementById('fileList').innerHTML = '<p style="color:red;">获取文件失败，请检查后端服务。</p>';
+        }
     }
 
-    // 🌟 统一渲染视图（根据模式渲染列表或画廊）
     function renderView() {
         const listDiv = document.getElementById('fileList');
         const galleryDiv = document.getElementById('galleryGrid');
@@ -120,7 +124,6 @@
             galleryDiv.style.display = 'grid';
             galleryDiv.innerHTML = '';
             
-            // 筛选出当前目录下的图片
             const images = allFiles.filter(f => f.file_type !== 'folder' && isImage(f.file_name));
             
             if (images.length === 0) {
@@ -165,7 +168,7 @@
                             <div class="file-item" style="border:none;">
                                 <div class="file-info">
                                     <span>📄 <strong>${file.file_name}</strong></span>
-                                    <span class="file-meta">大小: ${formatBytes(file.file_size)} | ${file.created_at}</span>
+                                    <span class="file-meta">大小: ${formatBytes(file.file_size)} | ${file.created_at || '未知时间'}</span>
                                 </div>
                                 <div>
                                     ${previewButton}
@@ -182,7 +185,6 @@
         }
     }
 
-    // 🌟 辅助判断函数
     function isImage(name) {
         const ext = name.split('.').pop().toLowerCase();
         return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
@@ -192,7 +194,6 @@
         return ['mp3', 'wav', 'ogg', 'm4a'].includes(ext);
     }
 
-    // 🌟 切换视图模式
     function toggleViewMode() {
         isGalleryMode = !isGalleryMode;
         const btn = document.getElementById('viewToggleBtn');
@@ -201,7 +202,6 @@
         renderView();
     }
 
-    // 🌟 全屏查看壁纸逻辑
     function openLightbox(url, name) {
         document.getElementById('lightbox-img').src = url;
         document.getElementById('lightbox-name').innerText = name;
