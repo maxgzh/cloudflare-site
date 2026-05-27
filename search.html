@@ -45,7 +45,7 @@
     </div>
 
     <div class="chat-container" id="chatBox">
-        </div>
+    </div>
 
     <div class="input-area">
         <div class="input-box">
@@ -82,7 +82,10 @@
             
             const label = document.createElement('div');
             label.className = 'msg-label';
-            label.innerText = role === 'user' ? '访客' : 'DeepSeek 智能体';
+            
+            // 🌟 核心修复点：动态读取本地存储的登录账号名
+            const currentUsername = localStorage.getItem('currentUser') || '访客';
+            label.innerText = role === 'user' ? currentUsername : 'DeepSeek 智能体';
             
             const bubble = document.createElement('div');
             bubble.className = 'msg-bubble';
@@ -120,8 +123,8 @@
             const loadingBubble = appendMessage('ai', '', true);
 
             try {
-                // 🌟 核心修改：获取当前登录状态，没登录就是游客
-                const currentUser = localStorage.getItem('currentUser') || '游客';
+                // 获取当前登录状态，传给后端作为附加信息
+                const currentUser = localStorage.getItem('currentUser') || '访客';
 
                 // 呼叫 Cloudflare 后端接口
                 const response = await fetch('/api/search-ai', {
