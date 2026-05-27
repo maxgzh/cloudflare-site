@@ -97,10 +97,9 @@
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
-   async function loadMyFiles() {
+    async function loadMyFiles() {
         document.getElementById('currentPathDisplay').innerText = currentPath;
         try {
-            // 🌟 唯一修改的地方：把 get-wallpapers 改成了 get-files
             const res = await fetch(`/api/get-files?username=${encodeURIComponent(currentUser)}&folder_path=${encodeURIComponent(currentPath)}`);
             allFiles = await res.json();
             renderView(); 
@@ -131,9 +130,11 @@
                 galleryDiv.innerHTML = '<p style="color:#888; grid-column: 1 / -1;">当前路径下没有发现壁纸/图片文件哦。</p>';
             } else {
                 images.forEach(img => {
+                    // 🌟 核心修复：将 R2 钥匙转换成新接口的访问链接
+                    const fileUrl = `/api/get-file?key=${encodeURIComponent(img.file_data)}`;
                     galleryDiv.innerHTML += `
-                        <div class="gallery-item" onclick="openLightbox('${img.download_url}', '${img.file_name}')">
-                            <img src="${img.download_url}" alt="${img.file_name}">
+                        <div class="gallery-item" onclick="openLightbox('${fileUrl}', '${img.file_name}')">
+                            <img src="${fileUrl}" alt="${img.file_name}">
                             <div class="overlay">${img.file_name}</div>
                         </div>
                     `;
@@ -158,10 +159,13 @@
                     `;
                 } else {
                     let previewButton = '';
+                    // 🌟 核心修复：将 R2 钥匙转换成新接口的访问链接
+                    const fileUrl = `/api/get-file?key=${encodeURIComponent(file.file_data)}`;
+
                     if (isImage(file.file_name)) {
-                        previewButton = `<a class="file-link" style="color:#3f6f6b;" onclick="togglePreview(${file.id}, 'image', '${file.download_url}')">预览图片</a>`;
+                        previewButton = `<a class="file-link" style="color:#3f6f6b;" onclick="togglePreview(${file.id}, 'image', '${fileUrl}')">预览图片</a>`;
                     } else if (isAudio(file.file_name)) {
-                        previewButton = `<a class="file-link" style="color:#3f6f6b;" onclick="togglePreview(${file.id}, 'audio', '${file.download_url}')">播放音乐</a>`;
+                        previewButton = `<a class="file-link" style="color:#3f6f6b;" onclick="togglePreview(${file.id}, 'audio', '${fileUrl}')">播放音乐</a>`;
                     }
 
                     listDiv.innerHTML += `
@@ -173,7 +177,7 @@
                                 </div>
                                 <div>
                                     ${previewButton}
-                                    <a class="file-link" href="${file.download_url}" target="_blank" download="${file.file_name}">下载</a>
+                                    <a class="file-link" href="${fileUrl}" target="_blank" download="${file.file_name}">下载</a>
                                     <a class="file-link" style="color:#777;" onclick="moveFile(${file.id}, '${file.file_name}')">移动</a>
                                     <button onclick="deleteFile(${file.id})" class="btn" style="background:#c0743a; padding:4px 8px;">删除</button>
                                 </div>
