@@ -14,7 +14,6 @@
         
         .center-wrapper { display: flex; flex-direction: column; align-items: center; gap: 20px; z-index: 10; width: 100%; max-width: 650px; padding: 0 20px; box-sizing: border-box;}
 
-        /* 🌟 用户状态控制台：移入中央正常排版流，居中显示，彻底解决重叠！ */
         .user-widget { display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; z-index: 20; width: 100%;}
         .btn-glass { background: rgba(255,255,255,0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5); color: var(--coal); font-weight: bold; cursor: pointer; text-decoration: none; font-size: 13px; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.02); display: flex; align-items: center;}
         .btn-glass:hover { background: white; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
@@ -26,20 +25,17 @@
         .clock-time { font-size: 3rem; font-weight: 800; letter-spacing: 1px; line-height: 1; margin-bottom: 5px; color: var(--coal);}
         .clock-date { font-size: 1rem; font-weight: 600; opacity: 0.8; letter-spacing: 0.5px; }
 
-        /* 🌟 AI 搜索框：修复移动端按钮被挤压的问题 */
         .search-container { width: 100%; position: relative; display: flex; box-shadow: 0 10px 35px rgba(0,0,0,0.06); border-radius: 30px; overflow: hidden; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.5); transition: all 0.3s;}
         .search-container:focus-within { box-shadow: 0 15px 40px rgba(0,0,0,0.1); transform: translateY(-2px); border-color: rgba(192, 116, 58, 0.4);}
-        .search-container input { flex: 1; border: none; padding: 18px 20px; font-size: 1.05rem; outline: none; background: transparent; color: var(--coal); font-weight: 500; min-width: 0; /* 防止撑破 flex */}
-        .search-container button { background: var(--coal); color: white; border: none; padding: 0 20px; font-weight: bold; font-size: 1.05rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; white-space: nowrap; /* 核心修复：绝不换行、绝不被挤压 */}
+        .search-container input { flex: 1; border: none; padding: 18px 20px; font-size: 1.05rem; outline: none; background: transparent; color: var(--coal); font-weight: 500; min-width: 0;}
+        .search-container button { background: var(--coal); color: white; border: none; padding: 0 20px; font-weight: bold; font-size: 1.05rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; white-space: nowrap;}
         .search-container button:hover { background: var(--accent); }
 
-        /* 左上角天气 */
         .weather-box { position: absolute; top: 15px; left: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20;}
         .weather-city { font-weight: bold; color: var(--orange); font-size: 12px;}
         .weather-detail { font-size: 11px; color: #666; margin-top: 1px;}
         .weather-temp { font-size: 16px; font-weight: bold; color: var(--coal); }
 
-        /* 🎵 音乐盒子：乖乖回到右上角，绝不挡道 */
         .music-box { position: absolute; top: 15px; right: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20; cursor: pointer; user-select: none;}
         .music-status { font-weight: bold; color: #777; font-size: 12px;}
         .music-bars { display: flex; align-items: flex-end; gap: 2.5px; height: 11px;}
@@ -51,15 +47,12 @@
         .music-bars.playing .bar:nth-child(4) { animation-duration: 1.7s; }
         @keyframes bounceBars { 0% { height: 3px; } 100% { height: 11px; } }
 
-        /* 左下角大厅 */
         .game-btn { position: absolute; bottom: 20px; left: 20px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 20; text-decoration: none; color: var(--orange); font-weight: bold; font-size: 14px; transition: 0.2s; }
         .game-btn:active { transform: scale(0.95); }
 
-        /* 中底部壁纸：移动端居中 */
         #wallpaper-widget { width: 100%; background: rgba(255,255,255,0.75); padding: 10px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.03); backdrop-filter: blur(6px); text-align: center; font-size: 12px; border: 1px solid #eee; transition: all 0.3s; box-sizing: border-box; margin-bottom: 80px; max-width: 360px; margin-top: 30px;}
         #today-img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.04); background: #eee;}
 
-        /* 登录弹窗层 */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 9999; display: none; justify-content: center; align-items: center; padding: 20px;}
         .auth-card { background: var(--sand); padding: 30px 20px; border-radius: 18px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); border: 1px solid var(--soft-line); width: 100%; max-width: 320px; box-sizing: border-box; position: relative;}
         .close-modal { position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 20px; cursor: pointer; color: #888;}
@@ -265,12 +258,39 @@
             updateLoginState(); 
             startClock();
             
-            if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => {
-                fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true`)
-                .then(r=>r.json()).then(d => {
-                    document.getElementById('weatherTemp').innerText = Math.round(d.current_weather.temperature) + '°C';
-                    document.getElementById('weatherDetail').innerText = d.current_weather.weathercode < 3 ? '晴好' : '多云/雨';
-                }).catch(()=>{});
+            // 🌟 核心升级：100%成功的 IP 自动化静默定位
+            fetch('https://get.geojs.io/v1/ip/geo.json')
+            .then(res => res.json())
+            .then(geo => {
+                const lat = geo.latitude;
+                const lon = geo.longitude;
+                const cityEng = geo.city || 'Unknown';
+                
+                // 常见城市英文转中文映射表
+                const cityMap = {
+                    'Beijing': '北京市', 'Shanghai': '上海市', 'Guangzhou': '广州市', 'Shenzhen': '深圳市',
+                    'Hangzhou': '杭州市', 'Chengdu': '成都市', 'Wuhan': '武汉市', 'Nanjing': '南京市',
+                    'Tianjin': '天津市', 'Chongqing': '重庆市', 'Xi\'an': '西安市', 'Suzhou': '苏州市',
+                    'Changsha': '长沙市', 'Shenyang': '沈阳市', 'Qingdao': '青岛市', 'Dalian': '大连市',
+                    'Zhengzhou': '郑州市', 'Xiamen': '厦门市', 'Fuzhou': '福州市', 'Harbin': '哈尔滨市',
+                    'Hefei': '合肥市', 'Shijiazhuang': '石家庄市', 'Kunming': '昆明市', 'Jinan': '济南市'
+                };
+                
+                // 写入并渲染城市名
+                document.getElementById('weatherLocation').innerText = cityMap[cityEng] || cityEng;
+
+                // 依靠拿到的经纬度请求天气
+                return fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+            })
+            .then(r => r.json())
+            .then(d => {
+                document.getElementById('weatherTemp').innerText = Math.round(d.current_weather.temperature) + '°C';
+                document.getElementById('weatherDetail').innerText = d.current_weather.weathercode < 3 ? '晴好' : '多云/雨';
+            })
+            .catch(() => {
+                document.getElementById('weatherLocation').innerText = '地球某处';
+                document.getElementById('weatherTemp').innerText = '--°C';
+                document.getElementById('weatherDetail').innerText = '同步失败';
             });
 
             fetch('/api/get-public-wallpapers?type=latest').then(r=>r.json()).then(d=>{
