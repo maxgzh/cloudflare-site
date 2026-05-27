@@ -80,6 +80,7 @@
             white-space: pre-wrap; 
         }
         .log-sys { color: #888; font-size: 0.85em; }
+        .log-important { color: #e5b567; font-weight: bold; }
         
         .controls { 
             width: 100%; 
@@ -102,8 +103,8 @@
             transition: 0.2s;
             user-select: none;
         }
-        button:hover, button:active { background: var(--accent); color: white; }
-        button:disabled { background: #555; color: #888; cursor: not-allowed; }
+        button:hover:not(:disabled) { background: var(--accent); color: white; }
+        button:disabled { background: #443; color: #776; cursor: not-allowed; }
 
         @media (min-width: 650px) {
             body { padding: 25px; }
@@ -161,14 +162,14 @@
     </div>
 
     <div class="log-screen" id="logScreen">
-        <div class="log-entry log-sys">【系统】欢迎来到迷雾森林联机冒险</div>
+        <div class="log-entry log-sys">【系统】欢迎来到迷雾森林联机冒险 v2.0</div>
     </div>
 
     <div class="controls">
         <button id="btn-start" onclick="sendStart()">🚀 开始探险</button>
-        <button id="btn-go" onclick="sendAction('go前进')">👣 前进探索</button>
-        <button id="btn-hide" onclick="sendAction('hide躲藏')">🛡️ 躲藏避险</button>
-        <button id="btn-fight" onclick="sendAction('fight战斗')">⚔️ 战斗对抗</button>
+        <button id="btn-go" onclick="sendAction('前进探索')" disabled>👣 前进探索</button>
+        <button id="btn-hide" onclick="sendAction('躲藏避险')" disabled>🛡️ 躲藏避险</button>
+        <button id="btn-fight" onclick="sendAction('战斗对抗')" disabled>⚔️ 战斗对抗</button>
     </div>
 
     <div id="join-modal">
@@ -183,22 +184,40 @@
     <script>
         let ws = null;
         const logScreen = document.getElementById('logScreen');
-        const btns = document.querySelectorAll('.controls button');
+        // 将按钮分为两组，方便控制状态
+        const btnStart = document.getElementById('btn-start');
+        const actionBtns = [
+            document.getElementById('btn-go'),
+            document.getElementById('btn-hide'),
+            document.getElementById('btn-fight')
+        ];
 
         function connectServer() {
             const roomInput = document.getElementById('room-id-input');
             const roomId = roomInput.value.trim() || "new";
             document.getElementById('join-modal').style.display = 'none';
+            document.getElementById('ui-room').innerText = roomId;
 
-            // 🌟 终极修复：使用加密的 wss 协议，并指向 Cloudflare 允许的 8443 端口
+            // 纯净版 URL，没有 :8443，依靠 Cloudflare 规则转发
             const wsUrl = `wss://gameapi.maxgzh.xyz/ws/forest/${roomId}`;
             
             try {
                 ws = new WebSocket(wsUrl);
 
                 ws.onopen = () => {
-                    addLog("✅ 成功连接服务器！", true);
-                    btns.forEach(b => b.disabled = false);
+                    // 🌟 新版核心：连接后必须立刻发送初始化数据
+                    const randomId = Math.floor(Math.random() * 9000) + 1000;
+                    const roles = ["战士", "法师", "游侠", "医者"];
+                    const myRole = roles[Math.floor(Math.random() * roles.length)];
+                    
+                    ws.send(JSON.stringify({
+                        name: `旅人_${randomId}`,
+                        role: myRole
+                    }));
+
+                    document.getElementById('ui-job').innerText = myRole;
+                    addLog("✅ 成功连接服务器！等待队长开始探险...", true);
+                    btnStart.disabled = false; // 只有连接成功才允许点击开始
                 };
 
                 ws.onmessage = (event) => {
@@ -206,72 +225,105 @@
                         const data = JSON.parse(event.data);
                         handleServerMsg(data);
                     } catch (e) {
-                        addLog(event.data, false);
+                        console.error("解析消息失败", e);
                     }
                 };
 
                 ws.onclose = () => {
                     addLog("❌ 服务器连接断开", true);
-                    btns.forEach(b => b.disabled = true);
+                    btnStart.disabled = true;
+                    actionBtns.forEach(b => b.disabled = true);
                 };
 
                 ws.onerror = () => {
-                    addLog("❌ 连接失败，请检查服务器状态", true);
+                    addLog("❌ 连接失败，请检查网络", true);
                     document.getElementById('join-modal').style.display = 'flex';
                 };
             } catch (err) {
-                addLog(`❌ 初始化链路错误: ${err.message}`, true);
+                addLog(`❌ 初始化错误: ${err.message}`, true);
                 document.getElementById('join-modal').style.display = 'flex';
             }
         }
 
         function handleServerMsg(data) {
             switch(data.type) {
-                case "new_room":
-                case "join_room":
-                    document.getElementById('ui-room').innerText = data.rid;
-                    document.getElementById('ui-job').innerText = data.job;
-                    addLog(`🏠 房间：${data.rid}`, true);
-                    addLog(`👤 职业：${data.job} | ${data.skill}`, true);
+                case "player_join":
+                case "player_leave":
+                case "player_ready":
+                    addLog(data.message, true);
+                    if (data.hp !== undefined) document.getElementById('ui-hp').innerText = data.hp;
+                    if (data.progress !== undefined) document.getElementById('ui-progress').innerText = `${data.progress}/30`;
                     break;
-                case "notify":
-                    addLog(data.data, false);
+                    
+                case "game_start":
+                    addLog(data.message, true);
+                    addLog(`\n【当前场景】\n${data.current_scene}`, false);
+                    btnStart.style.display = 'none'; // 开始游戏后隐藏开始按钮
+                    actionBtns.forEach(b => b.disabled = false); // 激活行动按钮
                     break;
-                case "tip":
-                    addLog(`💡 ${data.msg}`, true);
+                    
+                case "status_change":
+                    if (data.message) addLog(data.message, true);
+                    if (data.status === "ROUND_INPUT") {
+                        // 新回合开始，重新激活行动按钮
+                        actionBtns.forEach(b => b.disabled = false);
+                    } else if (data.status === "AI_PROCESSING") {
+                        // AI 处理中，禁用所有按钮防止重复提交
+                        actionBtns.forEach(b => b.disabled = true);
+                    }
                     break;
+                    
+                case "round_result":
+                    // 🌟 打印 AI 生成的多人联合剧情
+                    addLog(`\n📜 【判定结果】\n${data.narration}`, false);
+                    addLog(`\n🌫️ 【下一步】\n${data.next_scene}`, false);
+                    
+                    document.getElementById('ui-hp').innerText = data.hp;
+                    document.getElementById('ui-progress').innerText = `${data.progress}/30`;
+                    
+                    if (data.is_over) {
+                        addLog("🏁 探险结束！", true);
+                        actionBtns.forEach(b => b.disabled = true);
+                    }
+                    break;
+                    
                 case "error":
-                    addLog(`❌ ${data.msg}`, true);
+                    addLog(data.message, true);
+                    actionBtns.forEach(b => b.disabled = false); // 出错后允许重新点击
                     break;
             }
         }
 
         function sendStart() {
             if (!ws) return addLog("❌ 未连接服务器", true);
-            ws.send(JSON.stringify({ cmd: "start_game" }));
-            addLog("🚀 全队开始探险！", true);
+            ws.send(JSON.stringify({ type: "start_game" }));
+            btnStart.disabled = true; // 点一次就灰掉
         }
 
         function sendAction(action) {
             if (!ws) return addLog("❌ 未连接服务器", true);
             
-            addLog(`> 行动：${action}`, false);
-            ws.send(JSON.stringify({ cmd: "do_action", action: action }));
+            addLog(`> 你决定：${action} (等待队友...)`, false);
+            ws.send(JSON.stringify({ type: "submit_action", action: action }));
             
-            btns.forEach(b => b.disabled = true);
-            setTimeout(() => btns.forEach(b => b.disabled = false), 600);
+            // 点击后立即锁定按钮，等待全队提交完毕
+            actionBtns.forEach(b => b.disabled = true);
         }
 
         function addLog(text, isSys = false) {
             const div = document.createElement('div');
             div.className = isSys ? 'log-entry log-sys' : 'log-entry';
+            if(text.includes('【判定结果】') || text.includes('【下一步】')) {
+                div.classList.add('log-important');
+            }
             div.textContent = text;
             logScreen.appendChild(div);
             logScreen.scrollTop = logScreen.scrollHeight;
         }
 
         window.onload = () => {
-            btns.forEach(b => b.disabled = true);
+            btnStart.disabled = true;
+            actionBtns.forEach(b => b.disabled = true);
         };
     </script>
 </body>
