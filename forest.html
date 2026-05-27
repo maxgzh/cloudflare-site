@@ -191,7 +191,7 @@
             document.getElementById('join-modal').style.display = 'none';
 
             // 🌟 终极修复：使用加密的 wss 协议，并指向 Cloudflare 允许的 8443 端口
-            const wsUrl = `wss://gameapi.maxgzh.xyz:8443/ws/forest/${roomId}`;
+            const wsUrl = `wss://gameapi.maxgzh.xyz/ws/forest/${roomId}`;
             
             try {
                 ws = new WebSocket(wsUrl);
