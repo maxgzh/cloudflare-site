@@ -97,10 +97,11 @@
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
-    async function loadMyFiles() {
+   async function loadMyFiles() {
         document.getElementById('currentPathDisplay').innerText = currentPath;
         try {
-            const res = await fetch(`/api/get-wallpapers?username=${encodeURIComponent(currentUser)}&folder_path=${encodeURIComponent(currentPath)}`);
+            // 🌟 唯一修改的地方：把 get-wallpapers 改成了 get-files
+            const res = await fetch(`/api/get-files?username=${encodeURIComponent(currentUser)}&folder_path=${encodeURIComponent(currentPath)}`);
             allFiles = await res.json();
             renderView(); 
         } catch (e) {
