@@ -169,7 +169,7 @@
 </head>
 <body>
   <div class="top-tools" id="topTools">
-    <a href="./index.html" target="_blank">总入口</a>
+    <a href="./index.html" target="_blank">登录界面</a>
     <a href="./overview.html" target="_blank">综合展示界面</a>
     <select id="sourceSelect"></select>
     <select id="batchSelect"></select>
@@ -479,7 +479,7 @@
 
     function sidebarHtml(activeKey) {
       const items = [
-        ["home", "总入口", "./index.html"],
+        ["home", "登录界面", "./index.html"],
         ["online-monitoring", "在线监测", "./online-monitoring.html"],
         ["historical-tracks", "历史轨迹", "./historical-tracks.html"],
         ["operation-management", "作业管理", "./operation-management.html"],
@@ -498,7 +498,7 @@
         ...Object.entries(pages).map(([key, p]) => [key, { ...p, url: `./${key}.html` }])
       ];
       const cards = entries.map(([key, p]) => `<article class="home-card en"><div><h2>${p.title}</h2><p>${p.subtitle}</p></div><a class="open-btn" href="${p.url}">打开</a></article>`).join("");
-      $("app").innerHTML = `<div class="en-shell unified-shell">${sidebarHtml("home")}<section class="en-body unified-content"><header class="en-top unified-topbar"><div class="data-title unified-topbar-title">☰ 混合动力拖拉机田间作业载荷数据平台</div><div class="top-label unified-topbar-section">平台总入口</div></header><main class="en-main unified-page"><div class="home"><div class="home-head"><div><h1>农机试验数据平台总入口</h1><p>山东东营与新疆塔城田间试验数据统一从这里进入。</p></div><a class="open-btn" href="./overview.html">打开综合展示界面</a></div><div class="home-grid">${cards}</div></div></main></section></div>`;
+      $("app").innerHTML = `<div class="en-shell unified-shell">${sidebarHtml("home")}<section class="en-body unified-content"><header class="en-top unified-topbar"><div class="data-title unified-topbar-title">☰ 混合动力拖拉机田间作业载荷数据平台</div><div class="top-label unified-topbar-section">登录界面</div></header><main class="en-main unified-page"><div class="home"><div class="home-head"><div><h1>登录界面</h1><p>山东东营与新疆塔城田间试验数据统一从这里进入。</p></div><a class="open-btn" href="./overview.html">打开综合展示界面</a></div><div class="home-grid">${cards}</div></div></main></section></div>`;
     }
     function renderShell() {
       document.body.classList.toggle("spectrum-locked", PAGE === "load-spectrum");
