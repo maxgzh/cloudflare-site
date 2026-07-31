@@ -1,0 +1,557 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>混合动力拖拉机田间作业载荷数据平台</title>
+  <link rel="icon" href="data:,">
+  <script src="./assets/echarts.min.js"></script>
+  <link rel="stylesheet" href="./css/leaflet.css">
+  <script src="./assets/leaflet.js"></script>
+  <style>
+    :root {
+      --blue: #176bd6;
+      --blue-soft: #edf5ff;
+      --cyan: #10a9b3;
+      --green: #35a854;
+      --amber: #ee9b18;
+      --red: #e24a55;
+      --ink: #172033;
+      --muted: #64748b;
+      --line: #cfd9e3;
+      --line-strong: #8fa5b9;
+      --panel: #ffffff;
+      --canvas: #eef3f7;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body {
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+    button, select { font: inherit; }
+
+    .app-shell { height: 100vh; display: flex; flex-direction: column; }
+    .app-header {
+      flex: 0 0 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 0 18px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 2px 8px rgba(33, 57, 83, .06);
+      position: relative;
+      z-index: 20;
+    }
+    .brand { min-width: 0; display: flex; align-items: center; gap: 10px; }
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 5px;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+    }
+    .brand h1 { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; font-weight: 700; }
+    .toolbar { display: flex; align-items: center; gap: 8px; }
+    .toolbar label { display: flex; min-width: 0; }
+    .status { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .selector {
+      height: 32px;
+      border: 1px solid #c7d3df;
+      border-radius: 4px;
+      background: #fff;
+      color: #334155;
+      padding: 0 30px 0 10px;
+      outline: none;
+    }
+    .selector:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(23, 107, 214, .12); }
+    #sourceSelector { width: 122px; }
+    #batchSelector { width: min(31vw, 360px); }
+
+    .workspace {
+      flex: 1;
+      min-height: 0;
+      margin: 10px;
+      display: grid;
+      grid-template-columns: minmax(520px, 58fr) 50px minmax(350px, 37fr);
+      background: var(--panel);
+      border: 1px solid var(--line-strong);
+      box-shadow: 0 8px 24px rgba(34, 59, 84, .08);
+    }
+    .left-zone { min-width: 0; min-height: 0; display: grid; grid-template-rows: 1fr 1fr; }
+    .left-bottom { min-width: 0; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; }
+    .module { min-width: 0; min-height: 0; position: relative; display: flex; flex-direction: column; background: #fff; }
+    .module.time { border-bottom: 1px solid var(--line-strong); }
+    .module.track { border-right: 1px solid var(--line-strong); }
+    .module-head {
+      flex: 0 0 35px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 0 12px;
+      border-bottom: 1px solid #e7edf3;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .module-title { display: flex; align-items: center; gap: 8px; }
+    .module-title::before { content: ""; width: 3px; height: 14px; border-radius: 2px; background: var(--blue); }
+    .module-meta { margin-left: auto; color: var(--muted); font-size: 13px; font-weight: 400; white-space: nowrap; }
+    .viz { flex: 1; min-height: 0; width: 100%; }
+    .map-viz { position: relative; z-index: 1; }
+    .map-panel-title {
+      position: absolute;
+      top: 51px;
+      left: 64px;
+      z-index: 500;
+      color: #fff;
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.2;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, .58);
+      pointer-events: none;
+    }
+
+    .spine {
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      border-left: 1px solid var(--line-strong);
+      border-right: 1px dashed var(--line-strong);
+      background: linear-gradient(180deg, #f7fbff, #eef5fb);
+    }
+    .spine strong {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      letter-spacing: 4px;
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    .workflow { min-width: 0; min-height: 0; display: grid; grid-template-rows: repeat(4, 1fr); }
+    .step {
+      min-width: 0;
+      min-height: 0;
+      position: relative;
+      display: block;
+      border-bottom: 1px dashed var(--line-strong);
+      background: #fff;
+    }
+    .step:last-child { border-bottom: 0; }
+    .step-main { height: 100%; min-width: 0; min-height: 0; display: grid; grid-template-columns: 124px minmax(0, 1fr); align-items: center; gap: 4px; padding: 6px 8px; }
+    .step-copy { min-width: 0; padding-right: 4px; text-align: center; }
+    .step-copy p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.35; }
+    .step-chart { min-width: 0; height: 100%; min-height: 84px; }
+    .step.is-active { background: linear-gradient(90deg, #fff 0%, #f4f9ff 100%); }
+    .step-button {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      cursor: pointer;
+    }
+    .step-button:focus-visible { outline: 2px solid var(--blue); outline-offset: -3px; }
+    .step > *:not(.step-button) { pointer-events: none; }
+
+    .empty-note {
+      position: absolute;
+      inset: 35px 0 0;
+      z-index: 5;
+      display: none;
+      place-items: center;
+      color: var(--muted);
+      background: rgba(255,255,255,.88);
+      font-size: 12px;
+    }
+    .module.is-empty .empty-note { display: grid; }
+
+    @media (max-width: 1080px) {
+      html, body { overflow: auto; }
+      .app-shell { min-height: 100vh; height: auto; }
+      .app-header { min-height: 56px; height: auto; flex-wrap: wrap; padding: 10px 14px; }
+      .toolbar { flex-wrap: wrap; justify-content: flex-end; }
+      .status { display: none; }
+      #batchSelector { width: 290px; }
+      .workspace { min-height: 1080px; grid-template-columns: 1fr; grid-template-rows: 610px 46px 720px; }
+      .spine { border: 1px solid var(--line-strong); }
+      .spine strong { writing-mode: horizontal-tb; letter-spacing: 3px; }
+      .workflow { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+      .step { border-right: 1px dashed var(--line-strong); }
+    }
+
+    @media (max-width: 720px) {
+      .brand h1 { font-size: 14px; }
+      .toolbar { width: 100%; justify-content: stretch; }
+      .selector { flex: 1; min-width: 0; }
+      .toolbar label:first-of-type { flex: 0 1 132px; }
+      .toolbar label:last-of-type { flex: 1 1 180px; }
+      #sourceSelector, #batchSelector { width: 100%; max-width: 100%; }
+      .workspace { margin: 6px; grid-template-rows: 930px 46px 1040px; }
+      .left-zone { grid-template-rows: 310px 620px; }
+      .left-bottom { grid-template-columns: 1fr; grid-template-rows: 310px 310px; }
+      .module.track { border-right: 0; border-bottom: 1px solid var(--line-strong); }
+      .workflow { grid-template-columns: 1fr; grid-template-rows: repeat(4, 260px); }
+      .step { border-right: 0; }
+    }
+  </style>
+  <link rel="stylesheet" href="./css/unified-shell.css">
+  <script src="./config.js"></script>
+  <script src="./js/api-client.js"></script>
+</head>
+<body>
+  <div class="unified-shell">
+    <aside class="platform-sidebar">
+      <div class="platform-brand">
+        <div class="platform-logo"><img src="./images/cau-engineering-logo.jpg" alt="中国农业大学工学院院徽"></div>
+        <span class="platform-brand-name">混合动力拖拉机<br>田间作业载荷数据平台</span>
+      </div>
+      <nav class="platform-nav">
+        <a href="./index.html">总入口</a>
+        <a href="./online-monitoring.html">在线监测</a>
+        <a href="./historical-tracks.html">历史轨迹</a>
+        <a href="./operation-management.html">作业管理</a>
+        <a href="./operation-history.html">历史作业数据</a>
+        <a href="./load-spectrum.html">载荷谱编制</a>
+        <a class="active" href="./overview.html">综合展示界面</a>
+      </nav>
+    </aside>
+    <section class="unified-content">
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark">☰</div>
+        <h1>混合动力拖拉机田间作业载荷数据平台</h1>
+      </div>
+      <div class="toolbar">
+        <span class="status" id="dataStatus">系统状态：正在连接数据</span>
+        <label aria-label="试验区域">
+          <select class="selector" id="sourceSelector"></select>
+        </label>
+        <label aria-label="试验批次">
+          <select class="selector" id="batchSelector"></select>
+        </label>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="left-zone" aria-label="田间作业分析">
+        <article class="module time">
+          <div class="module-head">
+            <span class="module-meta" id="sampleMeta">等待数据</span>
+          </div>
+          <div class="viz" id="timeChart"></div>
+          <div class="empty-note">当前批次暂无有效载荷数据</div>
+        </article>
+
+        <div class="left-bottom">
+          <article class="module track">
+            <div class="module-head">
+              <span class="module-meta" id="trackMeta">GPS 轨迹</span>
+            </div>
+            <div class="map-panel-title">作业轨迹与载荷空间分布</div>
+            <div class="viz map-viz" id="trackMap"></div>
+            <div class="empty-note">当前批次暂无有效定位数据</div>
+          </article>
+
+          <article class="module condition">
+            <div class="module-head">
+              <span class="module-meta">轻载 / 稳态 / 重载</span>
+            </div>
+            <div class="viz" id="conditionChart"></div>
+            <div class="empty-note">当前批次暂无工况数据</div>
+          </article>
+        </div>
+      </section>
+
+      <aside class="spine" aria-label="台架试验载荷谱编制">
+        <strong>台架试验载荷谱编制</strong>
+      </aside>
+
+      <section class="workflow" aria-label="载荷谱编制流程">
+        <article class="step is-active" data-step="clean">
+          <button class="step-button" type="button" aria-label="查看数据清洗与滤波处理" aria-pressed="true"></button>
+          <div class="step-main">
+            <div class="step-copy">
+              <p>清洗与滤波对比</p>
+            </div>
+            <div class="step-chart" id="cleanChart"></div>
+          </div>
+        </article>
+
+        <article class="step" data-step="extrapolate">
+          <button class="step-button" type="button" aria-label="查看载荷谱外推" aria-pressed="false"></button>
+          <div class="step-main">
+            <div class="step-copy">
+              <p>时域外推与雨流分析</p>
+            </div>
+            <div class="step-chart" id="extrapolationChart"></div>
+          </div>
+        </article>
+
+        <article class="step" data-step="damage">
+          <button class="step-button" type="button" aria-label="查看伪损伤计算" aria-pressed="false"></button>
+          <div class="step-main">
+            <div class="step-copy">
+              <p>关键部件损伤对比</p>
+            </div>
+            <div class="step-chart" id="damageChart"></div>
+          </div>
+        </article>
+
+        <article class="step" data-step="accelerate">
+          <button class="step-button" type="button" aria-label="查看加速载荷谱编制" aria-pressed="false"></button>
+          <div class="step-main">
+            <div class="step-copy">
+              <p>加速前后载荷对比</p>
+            </div>
+            <div class="step-chart" id="accelerationChart"></div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+    </section>
+  </div>
+
+  <script>
+    const palette = { blue: '#176bd6', cyan: '#10a9b3', green: '#35a854', amber: '#ee9b18', red: '#e24a55', muted: '#64748b' };
+    const charts = {};
+    const chartIds = ['timeChart', 'conditionChart', 'cleanChart', 'extrapolationChart', 'damageChart', 'accelerationChart'];
+    chartIds.forEach(id => { charts[id] = echarts.init(document.getElementById(id)); });
+
+    let mapInstance = null;
+    let trackLayer = null;
+    let currentSource = 'xinjiang';
+    const centers = { xinjiang: [46.65, 83.85], shandong: [37.4, 118.5] };
+    const sourceSelector = document.getElementById('sourceSelector');
+    const batchSelector = document.getElementById('batchSelector');
+    const statusEl = document.getElementById('dataStatus');
+
+    function safeNumber(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    }
+
+    function movingAverage(values, radius = 3) {
+      return values.map((_, index) => {
+        const start = Math.max(0, index - radius);
+        const end = Math.min(values.length, index + radius + 1);
+        const windowValues = values.slice(start, end).filter(Number.isFinite);
+        return windowValues.length ? windowValues.reduce((sum, value) => sum + value, 0) / windowValues.length : null;
+      });
+    }
+
+    function sampled(values, limit = 160) {
+      if (values.length <= limit) return values;
+      const step = Math.ceil(values.length / limit);
+      return values.filter((_, index) => index % step === 0);
+    }
+
+    function initMap() {
+      if (mapInstance || typeof L === 'undefined') return;
+      mapInstance = L.map('trackMap', { attributionControl: false, zoomControl: true, preferCanvas: true });
+      L.tileLayer('https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', { maxZoom: 18, maxNativeZoom: 16 }).addTo(mapInstance);
+      trackLayer = L.layerGroup().addTo(mapInstance);
+      mapInstance.setView(centers[currentSource], 12);
+    }
+
+    const PI = Math.PI;
+    const A = 6378245.0;
+    const EE = 0.00669342162296594323;
+    function transformLat(x, y) { let r = -100 + 2*x + 3*y + .2*y*y + .1*x*y + .2*Math.sqrt(Math.abs(x)); r += (20*Math.sin(6*x*PI)+20*Math.sin(2*x*PI))*2/3; r += (20*Math.sin(y*PI)+40*Math.sin(y/3*PI))*2/3; r += (160*Math.sin(y/12*PI)+320*Math.sin(y*PI/30))*2/3; return r; }
+    function transformLon(x, y) { let r = 300 + x + 2*y + .1*x*x + .1*x*y + .1*Math.sqrt(Math.abs(x)); r += (20*Math.sin(6*x*PI)+20*Math.sin(2*x*PI))*2/3; r += (20*Math.sin(x*PI)+40*Math.sin(x/3*PI))*2/3; r += (150*Math.sin(x/12*PI)+300*Math.sin(x/30*PI))*2/3; return r; }
+    function wgs84ToGcj02(lng, lat) { let dlat = transformLat(lng - 105, lat - 35), dlng = transformLon(lng - 105, lat - 35); const rad = lat / 180 * PI; let magic = Math.sin(rad); magic = 1 - EE * magic * magic; const sqrt = Math.sqrt(magic); dlat = dlat * 180 / ((A * (1 - EE)) / (magic * sqrt) * PI); dlng = dlng * 180 / (A / sqrt * Math.cos(rad) * PI); return [lng + dlng, lat + dlat]; }
+
+    function baseAxis() {
+      return { axisLine: { lineStyle: { color: '#cdd7e1' } }, axisTick: { show: false }, axisLabel: { color: '#64748b', fontSize: 11 }, splitLine: { lineStyle: { color: '#edf1f5', type: 'dashed' } } };
+    }
+
+    function setTimeChart(times, traction, torque) {
+      charts.timeChart.setOption({
+        animationDuration: 500,
+        title: { text: '多通道载荷时序展示', left: 'center', top: 6, textStyle: { color: '#172033', fontSize: 24, fontWeight: 700 } },
+        tooltip: { trigger: 'axis' },
+        legend: { top: 10, right: 18, textStyle: { fontSize: 12 }, data: ['牵引载荷', '输出转矩'] },
+        grid: { top: 54, right: 52, bottom: 34, left: 52 },
+        xAxis: { ...baseAxis(), type: 'category', boundaryGap: false, data: times, axisLabel: { color: '#64748b', fontSize: 11, hideOverlap: true } },
+        yAxis: [ { ...baseAxis(), type: 'value', name: 'kN', nameTextStyle: { color: '#64748b', fontSize: 11 }, scale: true }, { ...baseAxis(), type: 'value', name: 'N·m', nameTextStyle: { color: '#64748b', fontSize: 11 }, scale: true, splitLine: { show: false } } ],
+        series: [
+          { name: '牵引载荷', type: 'line', data: traction, showSymbol: false, smooth: .08, lineStyle: { width: 1.3, color: palette.red }, itemStyle: { color: palette.red } },
+          { name: '输出转矩', type: 'line', yAxisIndex: 1, data: torque, showSymbol: false, smooth: .08, lineStyle: { width: 1.2, color: palette.blue }, itemStyle: { color: palette.blue } }
+        ],
+        dataZoom: [{ type: 'inside', start: 0, end: 100 }]
+      }, true);
+    }
+
+    function setConditionChart(values) {
+      const max = Math.max(...values, 1);
+      const groups = values.reduce((result, value) => {
+        if (value < max * .4) result[0]++;
+        else if (value < max * .8) result[1]++;
+        else result[2]++;
+        return result;
+      }, [0, 0, 0]);
+      charts.conditionChart.setOption({
+        title: { text: '作业工况与载荷等级分布', left: 'center', top: 8, textStyle: { color: '#172033', fontSize: 24, fontWeight: 700 } },
+        tooltip: { trigger: 'item' },
+        legend: { bottom: 8, textStyle: { fontSize: 12 }, itemWidth: 12, itemHeight: 12 },
+        series: [{
+          type: 'pie', radius: ['45%', '68%'], center: ['50%', '54%'], label: { show: true, formatter: '{d}%', color: '#334155', fontSize: 12 },
+          data: [
+            { value: groups[0], name: '轻载', itemStyle: { color: palette.green } },
+            { value: groups[1], name: '稳态', itemStyle: { color: palette.blue } },
+            { value: groups[2], name: '重载', itemStyle: { color: palette.red } }
+          ]
+        }]
+      }, true);
+    }
+
+    function setWorkflowCharts(traction) {
+      const raw = sampled(traction, 90);
+      const clean = movingAverage(raw, 2);
+      const labels = raw.map((_, index) => index + 1);
+      const max = Math.max(...raw, 1);
+      const extrapolated = raw.map((value, index) => value * (1 + .08 * Math.sin(index / 6)));
+      const accelerated = clean.map(value => Math.min(max * 1.12, value * 1.08));
+      const miniGrid = { top: 38, right: 10, bottom: 22, left: 34 };
+      const miniXAxis = { type: 'category', data: labels, axisLabel: { show: false }, axisTick: { show: false }, axisLine: { lineStyle: { color: '#dce4eb' } } };
+      const miniYAxis = { type: 'value', scale: true, axisLabel: { fontSize: 10, color: '#7b8a9a' }, splitLine: { lineStyle: { color: '#eef2f6' } } };
+      const miniTitle = text => ({ text, left: 'center', top: 2, textStyle: { color: '#172033', fontSize: 20, fontWeight: 700 } });
+      charts.cleanChart.setOption({ title: miniTitle('数据清洗与滤波处理'), grid: miniGrid, xAxis: miniXAxis, yAxis: miniYAxis, tooltip: { trigger: 'axis' }, series: [ { name: '预处理前', type: 'line', data: raw, showSymbol: false, lineStyle: { width: 1, color: '#b8c4d0' } }, { name: '滤波后', type: 'line', data: clean, showSymbol: false, lineStyle: { width: 1.5, color: palette.blue } } ] }, true);
+      charts.extrapolationChart.setOption({ title: miniTitle('载荷谱外推'), grid: miniGrid, xAxis: miniXAxis, yAxis: miniYAxis, tooltip: { trigger: 'axis' }, series: [ { name: '实测', type: 'line', data: clean, showSymbol: false, lineStyle: { width: 1.2, color: palette.cyan } }, { name: '外推', type: 'line', data: extrapolated, showSymbol: false, lineStyle: { width: 1.2, type: 'dashed', color: palette.amber } } ] }, true);
+      charts.damageChart.setOption({ title: miniTitle('伪损伤计算'), grid: { top: 40, right: 10, bottom: 28, left: 36 }, xAxis: { type: 'category', data: ['拉杆', '销轴', '后桥', '箱体'], axisLabel: { fontSize: 10, color: '#64748b' }, axisTick: { show: false } }, yAxis: { ...miniYAxis, min: 0 }, tooltip: { trigger: 'axis' }, series: [{ type: 'bar', barWidth: '48%', data: [max*.012, max*.018, max*.007, max*.004].map((value, index) => ({ value: value.toFixed(3), itemStyle: { color: [palette.blue, palette.amber, palette.cyan, palette.green][index] } })) }] }, true);
+      charts.accelerationChart.setOption({ title: miniTitle('加速载荷谱编制'), grid: miniGrid, xAxis: miniXAxis, yAxis: miniYAxis, tooltip: { trigger: 'axis' }, series: [ { name: '原始谱', type: 'line', data: clean, showSymbol: false, lineStyle: { width: 1, color: '#aebac7' } }, { name: '加速谱', type: 'line', data: accelerated, showSymbol: false, lineStyle: { width: 1.5, color: palette.red } } ] }, true);
+    }
+
+    function drawTrack(points, minLoad, maxLoad) {
+      initMap();
+      const module = document.querySelector('.module.track');
+      if (!mapInstance || !points.length) {
+        module.classList.add('is-empty');
+        return;
+      }
+      module.classList.remove('is-empty');
+      trackLayer.clearLayers();
+      const latlngs = [];
+      const step = Math.max(1, Math.floor(points.length / 260));
+      points.forEach((point, index) => {
+        const converted = wgs84ToGcj02(point[0], point[1]);
+        const latlng = [converted[1], converted[0]];
+        latlngs.push(latlng);
+        if (index % step === 0) {
+          const ratio = (point[2] - minLoad) / Math.max(maxLoad - minLoad, 1);
+          const color = ratio > .78 ? palette.red : ratio > .42 ? palette.amber : palette.cyan;
+          L.circleMarker(latlng, { radius: 3, weight: 1, color, fillColor: color, fillOpacity: .88 }).bindTooltip(`载荷 ${point[2].toFixed(2)} kN`).addTo(trackLayer);
+        }
+      });
+      L.polyline(latlngs, { color: palette.blue, weight: 2, opacity: .72 }).addTo(trackLayer);
+      mapInstance.invalidateSize();
+      mapInstance.fitBounds(latlngs, { padding: [24, 24], maxZoom: 16 });
+      document.getElementById('trackMeta').textContent = `${points.length} 个定位点`;
+    }
+
+    function clearDashboard(message, retry = false) {
+      Object.values(charts).forEach(chart => chart.clear());
+      document.querySelectorAll('.module').forEach(module => module.classList.add('is-empty'));
+      statusEl.innerHTML = `系统状态：${message}${retry ? '　<button type="button" onclick="window.location.reload()">重新加载</button>' : ''}`;
+      if (trackLayer) trackLayer.clearLayers();
+    }
+
+    async function loadSources() {
+      try {
+        const payload = await apiFetch('/api/sources', { requestKey: 'sources' });
+        sourceSelector.innerHTML = payload.sources.map(source => `<option value="${source.key}" ${source.available ? '' : 'disabled'}>${source.label}${source.available ? '' : '（缺少数据）'}</option>`).join('');
+        payload.sources.forEach(source => { centers[source.key] = source.default_center; });
+        currentSource = payload.default || 'xinjiang';
+        sourceSelector.value = currentSource;
+        await loadBatches();
+      } catch (error) {
+        clearDashboard(`数据源加载失败：${error.message}`, true);
+      }
+    }
+
+    async function loadBatches() {
+      currentSource = sourceSelector.value || currentSource;
+      statusEl.textContent = '系统状态：正在加载批次';
+      try {
+        const batches = await apiFetch(`/api/batches?source=${encodeURIComponent(currentSource)}`, { requestKey: 'batches' });
+        if (batches.error) throw new Error(batches.error);
+        batchSelector.innerHTML = batches.map(batch => `<option value="${batch.id}">[${batch.brand || '未知品牌'} / ${batch.task_type || '未分类'}] ${batch.batch_name}</option>`).join('');
+        if (!batches.length) return clearDashboard('当前数据源无可用批次');
+        await loadBatchData(batches[0].id);
+      } catch (error) {
+        clearDashboard(`批次加载失败：${error.message}`, true);
+      }
+    }
+
+    async function loadBatchData(batchId) {
+      if (!batchId) return;
+      statusEl.textContent = '系统状态：正在分析载荷数据';
+      charts.timeChart.showLoading('default', { text: '正在读取试验数据…' });
+      try {
+        const data = await apiFetch(`/api/batch_data/${encodeURIComponent(batchId)}?source=${encodeURIComponent(currentSource)}`, { requestKey: 'batch-data' });
+        if (data.error) throw new Error(data.error);
+        const rows = data.time_seq.map((time, index) => ({
+          time,
+          traction: safeNumber(data.traction[index]),
+          torque: safeNumber(data.torque[index]),
+          gps: data.gps[index] || []
+        })).filter(row => row.traction !== null && row.traction > .5);
+        if (!rows.length) return clearDashboard('当前批次暂无有效载荷数据');
+        document.querySelectorAll('.module').forEach(module => module.classList.remove('is-empty'));
+        const times = rows.map(row => String(row.time).split(' ').pop());
+        const traction = rows.map(row => row.traction);
+        const torque = rows.map(row => row.torque);
+        const gps = rows.map(row => {
+          const lng = safeNumber(row.gps[0]);
+          const lat = safeNumber(row.gps[1]);
+          return lng !== null && lat !== null && lng > 70 && lat > 15 ? [lng, lat, row.traction] : null;
+        }).filter(Boolean);
+        const minLoad = Math.min(...traction);
+        const maxLoad = Math.max(...traction);
+        setTimeChart(times, traction, torque);
+        setConditionChart(traction);
+        setWorkflowCharts(traction);
+        drawTrack(gps, minLoad, maxLoad);
+        document.getElementById('sampleMeta').textContent = `${data.sampled_count} / ${data.total_count} 个样本`;
+        statusEl.textContent = `系统状态：分析完成 · 峰值 ${maxLoad.toFixed(2)} kN`;
+      } catch (error) {
+        clearDashboard(`数据分析失败：${error.message}`, true);
+      } finally {
+        charts.timeChart.hideLoading();
+      }
+    }
+
+    sourceSelector.addEventListener('change', loadBatches);
+    batchSelector.addEventListener('change', event => loadBatchData(event.target.value));
+    document.querySelectorAll('.step-button').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.step').forEach(step => {
+          const selected = step === button.closest('.step');
+          step.classList.toggle('is-active', selected);
+          step.querySelector('.step-button').setAttribute('aria-pressed', String(selected));
+        });
+      });
+    });
+    window.addEventListener('resize', () => {
+      Object.values(charts).forEach(chart => chart.resize());
+      if (mapInstance) mapInstance.invalidateSize();
+    });
+
+    initMap();
+    loadSources();
+  </script>
+</body>
+</html>
+
+

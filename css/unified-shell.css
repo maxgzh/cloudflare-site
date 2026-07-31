@@ -1,0 +1,197 @@
+:root {
+  --shell-blue: #176bd6;
+  --shell-blue-dark: #15569a;
+  --shell-blue-soft: #eef6ff;
+  --shell-ink: #172033;
+  --shell-muted: #64748b;
+  --shell-line: #d8e3ed;
+}
+
+.unified-shell {
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 184px minmax(0, 1fr);
+  background: #eef4f7;
+}
+
+.platform-sidebar {
+  position: relative;
+  z-index: 30;
+  min-height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(180deg, #267cf0 0%, #1d61a7 100%);
+  color: #fff;
+  box-shadow: 4px 0 16px rgba(21, 76, 133, .15);
+}
+
+.platform-sidebar::before,
+.platform-sidebar::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .13);
+  pointer-events: none;
+}
+
+.platform-sidebar::before { width: 170px; height: 170px; left: -92px; top: -70px; }
+.platform-sidebar::after { width: 150px; height: 150px; left: -70px; bottom: -76px; }
+
+.platform-brand {
+  position: relative;
+  z-index: 1;
+  padding: 18px 12px 16px;
+  text-align: center;
+}
+
+.platform-logo {
+  width: 78px;
+  height: 78px;
+  margin: 0 auto 10px;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, .92);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 5px 16px rgba(2, 31, 72, .28), 0 0 0 3px rgba(255, 255, 255, .14);
+}
+
+.platform-logo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transform: scale(1.08);
+}
+
+.platform-brand-name {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: .2px;
+  text-shadow: 0 1px 2px rgba(0, 31, 78, .2);
+}
+
+.platform-nav {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 3px;
+  padding-bottom: 20px;
+}
+
+.platform-nav a {
+  position: relative;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px 0 50px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.platform-nav a::before {
+  content: "";
+  position: absolute;
+  left: 27px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  opacity: .92;
+}
+
+.platform-nav a:hover { background: rgba(255, 255, 255, .1); }
+
+.platform-nav a.active {
+  margin-left: 16px;
+  padding-left: 42px;
+  border-radius: 999px 0 0 999px;
+  background: #fff;
+  color: var(--shell-blue);
+  box-shadow: 0 3px 10px rgba(10, 58, 111, .12);
+}
+
+.platform-nav a.active::before { left: 20px; }
+
+.unified-content {
+  min-width: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.unified-topbar {
+  flex: 0 0 56px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 22px;
+  background: #fff;
+  border-bottom: 1px solid var(--shell-line);
+  box-shadow: 0 1px 5px rgba(18, 62, 103, .07);
+}
+
+.unified-topbar-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--shell-ink);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.unified-topbar-section {
+  color: var(--shell-blue);
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.unified-page {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.unified-content > .app-shell {
+  width: 100%;
+  min-width: 0;
+  height: 100vh;
+}
+
+.unified-content .home {
+  min-height: 0;
+  padding: 18px 4px 24px;
+  background: transparent;
+}
+
+@media (max-width: 980px) {
+  .unified-shell { grid-template-columns: 152px minmax(0, 1fr); }
+  .platform-logo { width: 66px; height: 66px; }
+  .platform-brand-name { font-size: 10px; }
+  .platform-nav a { padding-left: 42px; font-size: 11px; }
+  .platform-nav a::before { left: 21px; }
+  .platform-nav a.active { margin-left: 10px; padding-left: 36px; }
+  .platform-nav a.active::before { left: 16px; }
+}
+
+@media (max-width: 720px) {
+  .unified-shell { grid-template-columns: 112px minmax(0, 1fr); }
+  .platform-brand { padding: 12px 7px; }
+  .platform-logo { width: 54px; height: 54px; }
+  .platform-brand-name { font-size: 9px; }
+  .platform-nav a { min-height: 38px; padding: 0 5px 0 27px; font-size: 10px; }
+  .platform-nav a::before { left: 10px; width: 10px; height: 10px; }
+  .platform-nav a.active { margin-left: 5px; padding-left: 26px; }
+  .platform-nav a.active::before { left: 9px; }
+  .unified-topbar { padding: 0 12px; }
+  .unified-topbar-title { font-size: 14px; }
+}
