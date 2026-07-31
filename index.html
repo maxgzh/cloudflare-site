@@ -170,7 +170,7 @@
 <body>
   <div class="top-tools" id="topTools">
     <a href="./index.html" target="_blank">登录界面</a>
-    <a href="./overview.html" target="_blank">综合展示界面</a>
+    <a href="./overview.html" target="_blank">综合展示</a>
     <select id="sourceSelect"></select>
     <select id="batchSelect"></select>
   </div>
@@ -485,7 +485,7 @@
         ["operation-management", "作业管理", "./operation-management.html"],
         ["operation-history", "历史作业数据", "./operation-history.html"],
         ["load-spectrum", "载荷谱编制", "./load-spectrum.html"],
-        ["original", "综合展示界面", "./overview.html"]
+        ["original", "综合展示", "./overview.html"]
       ];
       const links = items.map(([key, label, url]) => `<a class="${key === activeKey ? "active" : ""}" href="${url}">${label}</a>`).join("");
       return `<aside class="platform-sidebar"><div class="platform-brand"><div class="platform-logo"><img src="./images/cau-engineering-logo.jpg" alt="中国农业大学工学院院徽"></div><span class="platform-brand-name">混合动力拖拉机<br>田间作业载荷数据平台</span></div><nav class="platform-nav">${links}</nav></aside>`;
@@ -494,11 +494,11 @@
       document.body.classList.remove("spectrum-locked");
       $("topTools").style.display = "none";
       const entries = [
-        ["original", { lang: "zh", title: "综合展示界面", subtitle: "查看批次、时序曲线、作业轨迹与载荷分布等综合内容。", url: "./overview.html" }],
+        ["original", { lang: "zh", title: "综合展示", subtitle: "查看批次、时序曲线、作业轨迹与载荷分布等综合内容。", url: "./overview.html" }],
         ...Object.entries(pages).map(([key, p]) => [key, { ...p, url: `./${key}.html` }])
       ];
       const cards = entries.map(([key, p]) => `<article class="home-card en"><div><h2>${p.title}</h2><p>${p.subtitle}</p></div><a class="open-btn" href="${p.url}">打开</a></article>`).join("");
-      $("app").innerHTML = `<div class="en-shell unified-shell">${sidebarHtml("home")}<section class="en-body unified-content"><header class="en-top unified-topbar"><div class="data-title unified-topbar-title">☰ 混合动力拖拉机田间作业载荷数据平台</div><div class="top-label unified-topbar-section">登录界面</div></header><main class="en-main unified-page"><div class="home"><div class="home-head"><div><h1>登录界面</h1><p>山东东营与新疆塔城田间试验数据统一从这里进入。</p></div><a class="open-btn" href="./overview.html">打开综合展示界面</a></div><div class="home-grid">${cards}</div></div></main></section></div>`;
+      $("app").innerHTML = `<div class="en-shell unified-shell">${sidebarHtml("home")}<section class="en-body unified-content"><header class="en-top unified-topbar"><div class="data-title unified-topbar-title">☰ 混合动力拖拉机田间作业载荷数据平台</div><div class="top-label unified-topbar-section">平台登录界面</div></header><main class="en-main unified-page"><div class="home"><div class="home-head"><div><h1>农机试验数据平台登录界面</h1><p>山东东营与新疆塔城田间试验数据统一从这里进入。</p></div><a class="open-btn" href="./overview.html">打开综合展示</a></div><div class="home-grid">${cards}</div></div></main></section></div>`;
     }
     function renderShell() {
       document.body.classList.toggle("spectrum-locked", PAGE === "load-spectrum");
@@ -791,5 +791,6 @@
   </script>
 </body>
 </html>
+
 
 
