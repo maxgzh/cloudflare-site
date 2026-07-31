@@ -1,0 +1,797 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>混合动力拖拉机田间作业载荷数据平台</title>
+  <link rel="icon" href="data:,">
+  <script src="./assets/echarts.min.js"></script>
+  <script src="./assets/echarts-gl.min.js"></script>
+  <link rel="stylesheet" href="./css/leaflet.css">
+  <script src="./assets/leaflet.js"></script>
+  <style>
+    :root {
+      --bg: #eef4f6;
+      --card: #ffffff;
+      --line: #d9e4ec;
+      --text: #172033;
+      --muted: #64748b;
+      --blue: #176bd6;
+      --blue-2: #0e8ed8;
+      --green: #2fae6b;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --teal: #16b8bd;
+      --nav: #1f65aa;
+      --shadow: 0 8px 24px rgba(31, 76, 112, .08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: Arial, "Microsoft YaHei", sans-serif; }
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font-family: inherit; }
+    .top-tools { position: fixed; top: 10px; right: 14px; z-index: 1000; display: none; gap: 10px; align-items: center; }
+    .top-tools a, .top-tools select { height: 32px; border: 1px solid #cbd7e2; background: #fff; border-radius: 4px; padding: 0 10px; font-size: 13px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+    .top-tools a { display: flex; align-items: center; }
+    .top-tools select:last-child { min-width: 360px; max-width: 520px; }
+    .home { min-height: 100vh; padding: 72px 44px 42px; background: linear-gradient(135deg, #f7fbff, #eef7f2); }
+    .home-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 24px; }
+    .home h1 { margin: 0; font-size: 30px; }
+    .home p { color: var(--muted); line-height: 1.6; margin: 8px 0 0; }
+    .home-grid { display: grid; grid-template-columns: repeat(3, minmax(250px, 1fr)); gap: 18px; }
+    .home-card { min-height: 180px; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 18px; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between; }
+    .home-card.zh { border-top: 5px solid var(--green); }
+    .home-card.en { border-top: 5px solid var(--blue); }
+    .home-card h2 { margin: 0; font-size: 21px; }
+    .open-btn { align-self: flex-start; color: #fff; background: var(--blue); border-radius: 999px; padding: 9px 15px; font-weight: 700; }
+
+    .zh-shell { min-height: 100vh; display: flex; flex-direction: column; }
+    .zh-header { height: 54px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; background: linear-gradient(90deg, #4caf64, #8dcf7c); color: #fff; box-shadow: 0 2px 7px rgba(0,0,0,.12); }
+    .zh-brand { display: flex; align-items: center; gap: 12px; font-weight: 700; }
+    .zh-logo { width: 30px; height: 30px; border-radius: 5px; display: grid; place-items: center; background: rgba(255,255,255,.22); }
+    .zh-nav { display: flex; gap: 28px; font-size: 14px; }
+    .zh-main { flex: 1; padding: 18px; overflow: auto; }
+    .page-title { margin-bottom: 14px; display: flex; align-items: end; justify-content: space-between; gap: 20px; }
+    .page-title h1 { margin: 0; font-size: 24px; }
+    .page-title p { margin: 4px 0 0; color: var(--muted); }
+
+    .en-shell { min-height: 100vh; display: grid; grid-template-columns: 184px 1fr; }
+    .sidebar { position: relative; overflow: hidden; background: linear-gradient(180deg, #2579ee, #1d5f9f); color: #fff; padding-top: 30px; }
+    .sidebar:before, .sidebar:after { content: ""; position: absolute; width: 150px; height: 150px; border-radius: 50%; background: rgba(255,255,255,.16); }
+    .sidebar:before { left: -70px; top: -45px; }
+    .sidebar:after { left: -35px; bottom: -60px; }
+    .brand { position: relative; z-index: 1; text-align: center; margin-bottom: 34px; }
+    .brand-logo { width: 58px; height: 48px; border: 2px solid rgba(255,255,255,.75); border-radius: 12px; display: grid; place-items: center; margin: 0 auto 10px; font-size: 26px; font-weight: 900; }
+    .brand small { display: block; line-height: 1.2; font-weight: 700; font-size: 11px; }
+    .side-nav { position: relative; z-index: 1; display: grid; gap: 4px; }
+    .side-nav a { padding: 13px 16px 13px 52px; font-weight: 700; font-size: 12px; position: relative; }
+    .side-nav a:before { content: ""; position: absolute; left: 28px; top: 14px; width: 13px; height: 13px; border: 2px solid currentColor; border-radius: 3px; opacity: .9; }
+    .side-nav a.active { margin-left: 18px; border-radius: 999px 0 0 999px; background: rgba(255,255,255,.92); color: var(--blue); }
+    .en-body { min-width: 0; display: flex; flex-direction: column; }
+    .en-top { height: 56px; padding: 0 22px; display: flex; align-items: center; justify-content: space-between; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .data-title { font-family: Georgia, "Times New Roman", serif; font-size: 21px; font-weight: 700; }
+    .top-label { font-size: 18px; font-weight: 700; }
+    .en-main { flex: 1; min-height: 0; overflow: auto; padding: 16px 18px 18px; }
+
+    .grid { display: grid; gap: 16px; }
+    .two { grid-template-columns: 1.25fr .75fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 6px; box-shadow: var(--shadow); min-width: 0; }
+    .card-head { height: 44px; padding: 0 16px; border-bottom: 1px solid #edf2f6; display: flex; align-items: center; justify-content: space-between; font-weight: 700; }
+    .card-head:before { content: ""; width: 4px; height: 16px; background: var(--blue); border-radius: 2px; margin-right: 8px; }
+    .card-head span:first-child { display: flex; align-items: center; }
+    .card-body { padding: 16px; }
+    .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 18px; box-shadow: var(--shadow); }
+    .kpi .label { color: var(--muted); font-size: 13px; }
+    .kpi .value { margin-top: 8px; font-size: 28px; font-weight: 800; color: var(--blue); }
+    .kpi .unit { margin-left: 4px; color: var(--muted); font-size: 13px; font-weight: 400; }
+    .map-box { height: 460px; min-height: 320px; border-radius: 0 0 6px 6px; overflow: hidden; }
+    .chart { height: 320px; }
+    .chart.sm { height: 240px; }
+    .table-wrap { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border: 1px solid #e5edf4; padding: 7px 8px; text-align: left; white-space: nowrap; }
+    th { background: #f4f8fb; color: #334155; }
+    .status-list { display: grid; gap: 10px; }
+    .status-item { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #eef2f6; }
+    .status-item:last-child { border-bottom: 0; }
+    .muted { color: var(--muted); }
+    .badge { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; background: #eef6ff; color: var(--blue); font-size: 12px; font-weight: 700; }
+    .filters { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .filters label { display: grid; gap: 5px; color: #334155; font-size: 12px; font-weight: 700; }
+    .filters input, .filters select { height: 30px; border: 1px solid #cbd7e2; background: #f8fafc; border-radius: 3px; padding: 0 8px; }
+    .button { border: 0; color: #fff; background: var(--blue); border-radius: 999px; height: 32px; padding: 0 18px; font-weight: 700; cursor: pointer; }
+    .source-card { display: grid; gap: 10px; }
+    .source-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid #eef2f6; }
+    .source-row:last-child { border-bottom: 0; }
+    .route-list { max-height: 420px; overflow: auto; }
+    .route-item { padding: 11px 0; border-bottom: 1px solid #edf2f6; cursor: pointer; }
+    .route-item strong { display: block; margin-bottom: 4px; }
+    .route-item:hover { color: var(--blue); }
+    .process-flow { display: grid; grid-template-columns: repeat(6, minmax(130px, 1fr)); gap: 10px; }
+    .process-step { min-height: 126px; padding: 12px; border: 1px solid #dbe8f1; border-radius: 6px; background: #f8fbfd; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
+    .process-step strong { color: var(--blue); font-size: 14px; }
+    .process-step span { color: #334155; line-height: 1.45; font-size: 12px; }
+    .process-step em { color: var(--muted); font-style: normal; font-size: 12px; }
+    .algo-panel { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; align-items: stretch; }
+    .algo-controls { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 12px; align-items: end; }
+    .algo-controls label { display: grid; gap: 6px; color: #334155; font-weight: 700; font-size: 12px; }
+    .algo-controls input, .algo-controls select { height: 32px; border: 1px solid #cbd7e2; background: #f8fafc; border-radius: 4px; padding: 0 8px; }
+    .method-list { display: grid; gap: 8px; }
+    .method-row { display: grid; grid-template-columns: 130px 1fr; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid #eef2f6; line-height: 1.45; }
+    .method-row:last-child { border-bottom: 0; }
+    .method-row strong { color: var(--blue); }
+    .tag-line { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 999px; background: #edf7f3; color: #1d7a4f; font-size: 12px; font-weight: 700; }
+    .figure-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+    .figure-grid.single { grid-template-columns: 1fr; }
+    .chart.figure { height: 360px; }
+    .chart.figure-lg { height: 430px; }
+    .chart.figure-sm { height: 300px; }
+    .figure-note { color: var(--muted); font-size: 12px; font-weight: 400; }
+    body.spectrum-locked { height: 100vh; overflow: hidden; }
+    body.spectrum-locked .en-shell { height: 100vh; min-height: 0; overflow: hidden; }
+    body.spectrum-locked .en-main { height: calc(100vh - 56px); min-height: 0; overflow: hidden; padding: 10px 14px 12px; display: flex; flex-direction: column; }
+    body.spectrum-locked .page-title { flex: 0 0 auto; margin-bottom: 8px; align-items: center; }
+    body.spectrum-locked .page-title h1 { font-size: 20px; }
+    body.spectrum-locked .page-title p { margin-top: 2px; font-size: 12px; }
+    body.spectrum-locked #pageBody { flex: 1; min-height: 0; overflow: hidden; display: flex; }
+    .spectrum-dashboard { flex: 1; width: 100%; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+    .spectrum-dashboard .card { overflow: hidden; }
+    .spectrum-dashboard .card-head { height: 30px; padding: 0 10px; font-size: 13px; }
+    .spectrum-dashboard .card-head:before { width: 4px; height: 14px; margin-right: 7px; }
+    .spectrum-dashboard .card-body { height: calc(100% - 30px); padding: 8px 10px; }
+    .spectrum-dashboard .chart { width: 100%; height: 100%; min-height: 0; }
+    .spectrum-control-card .card-body { display: grid; grid-template-columns: 1.35fr .65fr; gap: 10px; align-items: end; }
+    .spectrum-controls { grid-template-columns: repeat(5, minmax(90px, 1fr)); gap: 8px; align-items: end; }
+    .spectrum-controls label { gap: 4px; font-size: 11px; }
+    .spectrum-controls input, .spectrum-controls select { height: 28px; }
+    .spectrum-controls .button { width: 100%; height: 28px; }
+    .spectrum-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .spectrum-kpis .kpi { min-height: 0; padding: 8px 10px; box-shadow: none; }
+    .spectrum-kpis .kpi .label { font-size: 11px; }
+    .spectrum-kpis .kpi .value { margin-top: 2px; font-size: 22px; line-height: 1; }
+    .spectrum-row { min-height: 0; display: grid; gap: 10px; }
+    .spectrum-row.top { grid-template-columns: 1.45fr .55fr; }
+    .spectrum-row.mid { grid-template-columns: 1fr 1fr; }
+    .spectrum-row.bottom { grid-template-columns: 1.25fr .75fr; }
+    .spectrum-rain-grid { height: 100%; display: grid; grid-template-columns: 1.2fr .8fr; gap: 8px; }
+    .spectrum-dashboard .figure-note { font-size: 11px; }
+    @media (max-width: 1180px) {
+      .en-shell { grid-template-columns: 152px 1fr; }
+      .two, .three, .four { grid-template-columns: 1fr; }
+      .process-flow, .algo-panel, .algo-controls, .figure-grid { grid-template-columns: 1fr; }
+      .top-tools { position: static; padding: 10px; background: #fff; flex-wrap: wrap; }
+      .top-tools select:last-child { min-width: 260px; max-width: 100%; }
+    }
+  </style>
+  <link rel="stylesheet" href="./css/unified-shell.css">
+</head>
+<body>
+  <div class="top-tools" id="topTools">
+    <a href="./index.html" target="_blank">登录界面</a>
+    <a href="./overview.html" target="_blank">综合展示</a>
+    <select id="sourceSelect"></select>
+    <select id="batchSelect"></select>
+  </div>
+  <div id="app"></div>
+
+  <script src="./config.js"></script>
+  <script src="./js/api-client.js"></script>
+  <script>
+    const PAGE = "home";
+    const pages = {
+      "field-test": { lang: "zh", shell: "en", title: "田间试验总览", subtitle: "围绕现有山东东营、新疆塔城试验数据，展示试验区域、批次和作业类型。" },
+      "test-data": { lang: "zh", shell: "en", title: "试验数据分析", subtitle: "面向单个批次查看载荷、转矩、SOC、轨迹和样本表。" },
+      "online-monitoring": { lang: "zh", shell: "en", title: "在线监测", subtitle: "汇总当前农机状态、定位信息与作业工况。" },
+      "historical-tracks": { lang: "zh", shell: "en", title: "历史轨迹", subtitle: "按批次查看作业轨迹、路线列表与空间统计。" },
+      "operation-management": { lang: "zh", shell: "en", title: "作业管理", subtitle: "展示作业区域、工况采样曲线与载荷分布。" },
+      "operation-history": { lang: "zh", shell: "en", title: "历史作业数据", subtitle: "查看历史工况明细与参数趋势分析。" },
+      "load-spectrum": { lang: "zh", shell: "en", title: "载荷谱编制", subtitle: "展示3σ异常值剔除、巴特沃斯低通滤波、雨流计数、POT外推与Miner线性累积损伤计算流程。" }
+    };
+    const nav = [
+      ["online-monitoring", "在线监测"],
+      ["historical-tracks", "历史轨迹"],
+      ["operation-management", "作业管理"],
+      ["operation-history", "历史作业数据"],
+      ["load-spectrum", "载荷谱编制"]
+    ];
+    let currentSource = "xinjiang";
+    let sources = [];
+    let batches = [];
+    let charts = [];
+    let maps = [];
+    const centers = { xinjiang: [46.65, 83.85], shandong: [37.4, 118.5] };
+    const colors = ["#176bd6", "#ef4444", "#16b8bd", "#f59e0b", "#2fae6b"];
+
+    function $(id) { return document.getElementById(id); }
+    function num(v) { const n = Number(v); return Number.isFinite(n) ? n : null; }
+    function fmt(v, d = 1) { v = num(v); return v === null ? "--" : v.toFixed(d); }
+    function clearVisuals() { charts.forEach(c => c.dispose()); maps.forEach(m => m.remove()); charts = []; maps = []; }
+    function chart(id) { const c = echarts.init($(id)); charts.push(c); return c; }
+    function center() { return centers[currentSource] || [37.4, 118.5]; }
+    const PI = Math.PI, A = 6378245.0, EE = 0.00669342162296594323;
+    function transformLat(x, y) { let r = -100 + 2*x + 3*y + .2*y*y + .1*x*y + .2*Math.sqrt(Math.abs(x)); r += (20*Math.sin(6*x*PI)+20*Math.sin(2*x*PI))*2/3; r += (20*Math.sin(y*PI)+40*Math.sin(y/3*PI))*2/3; r += (160*Math.sin(y/12*PI)+320*Math.sin(y*PI/30))*2/3; return r; }
+    function transformLon(x, y) { let r = 300 + x + 2*y + .1*x*x + .1*x*y + .1*Math.sqrt(Math.abs(x)); r += (20*Math.sin(6*x*PI)+20*Math.sin(2*x*PI))*2/3; r += (20*Math.sin(x*PI)+40*Math.sin(x/3*PI))*2/3; r += (150*Math.sin(x/12*PI)+300*Math.sin(x/30*PI))*2/3; return r; }
+    function wgs84ToGcj02(lng, lat) { let dlat = transformLat(lng - 105, lat - 35), dlng = transformLon(lng - 105, lat - 35); let rad = lat / 180 * PI, magic = Math.sin(rad); magic = 1 - EE * magic * magic; let sqrt = Math.sqrt(magic); dlat = (dlat * 180) / ((A * (1 - EE)) / (magic * sqrt) * PI); dlng = (dlng * 180) / (A / sqrt * Math.cos(rad) * PI); return [lng + dlng, lat + dlat]; }
+    function rows(data) {
+      const out = [];
+      for (let i = 0; i < data.time_seq.length; i++) {
+        const traction = num(data.traction[i]);
+        if (traction !== null) out.push({ time: data.time_seq[i], traction, torque: num(data.torque[i]), soc: num(data.soc[i]), gps: data.gps[i] || [] });
+      }
+      return out;
+    }
+    function points(data) {
+      const out = [];
+      for (let i = 0; i < data.gps.length; i++) {
+        const lng = num(data.gps[i][0]), lat = num(data.gps[i][1]), traction = num(data.traction[i]);
+        if (lng !== null && lat !== null && lng > 70 && lat > 15) {
+          const p = wgs84ToGcj02(lng, lat);
+          out.push([p[1], p[0], traction || 0, data.time_seq[i]]);
+        }
+      }
+      return out;
+    }
+    function stats(values) {
+      const clean = values.map(num).filter(v => v !== null);
+      if (!clean.length) return { min: null, max: null, avg: null };
+      return { min: Math.min(...clean), max: Math.max(...clean), avg: clean.reduce((a,b)=>a+b,0) / clean.length };
+    }
+    function addTile(map) {
+      L.tileLayer("https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}", { maxZoom: 18, maxNativeZoom: 16, attribution: "" }).addTo(map);
+    }
+    function drawTrackMap(id, pts, options = {}) {
+      const map = L.map(id, { attributionControl: false, zoomControl: true, preferCanvas: true, zoomSnap: 0.5, zoomDelta: 0.5 });
+      maps.push(map); addTile(map);
+      if (!pts.length) { map.setView(center(), 12); return map; }
+      const latlngs = pts.map(p => [p[0], p[1]]);
+      L.polyline(latlngs, { color: options.line || "#ef4444", weight: options.weight || 3, opacity: .9 }).addTo(map);
+      const step = Math.max(1, Math.floor(pts.length / (options.points || 240)));
+      for (let i = 0; i < pts.length; i += step) {
+        const color = options.point || "#18b7bd";
+        L.circleMarker([pts[i][0], pts[i][1]], { radius: 4, color, fillColor: color, fillOpacity: .8, weight: 1 }).addTo(map);
+      }
+      map.fitBounds(latlngs, { padding: options.padding || [90, 90], maxZoom: options.fitMaxZoom || 15 });
+      return map;
+    }
+    function lineChart(id, time, series) {
+      const c = chart(id);
+      c.setOption({
+        tooltip: { trigger: "axis" },
+        grid: { top: 28, right: 42, bottom: 34, left: 48 },
+        xAxis: { type: "category", data: time, axisLabel: { fontSize: 10 } },
+        yAxis: series.length > 1 ? [{ type: "value", scale: true }, { type: "value", scale: true }] : { type: "value", scale: true },
+        dataZoom: [{ type: "inside" }],
+        series: series.map((s, i) => ({ name: s.name, type: "line", yAxisIndex: s.axis || 0, data: s.data, showSymbol: false, itemStyle: { color: colors[i] }, lineStyle: { width: 1.5 } }))
+      });
+    }
+    function barChart(id, names, data) {
+      const c = chart(id);
+      c.setOption({ grid: { top: 24, right: 16, bottom: 34, left: 44 }, xAxis: { type: "category", data: names }, yAxis: { type: "value" }, series: [{ type: "bar", data, itemStyle: { color: p => colors[p.dataIndex % colors.length] } }] });
+    }
+    function pieChart(id, values) {
+      const abs = values.map(v => Math.abs(v)).filter(Number.isFinite);
+      const max = Math.max(...abs, 1);
+      let low = 0, mid = 0, high = 0;
+      abs.forEach(v => { if (v < max * .35) low++; else if (v < max * .75) mid++; else high++; });
+      const c = chart(id);
+      c.setOption({ legend: { bottom: 0 }, tooltip: { trigger: "item" }, series: [{ type: "pie", radius: ["45%", "70%"], data: [{ name: "低载荷", value: low, itemStyle: { color: "#2fae6b" } }, { name: "中载荷", value: mid, itemStyle: { color: "#176bd6" } }, { name: "高载荷", value: high, itemStyle: { color: "#ef4444" } }] }] });
+    }
+    function sampleTable(rs, limit = 12) {
+      return `<div class="table-wrap"><table><thead><tr><th>时间</th><th>牵引力（kN）</th><th>转矩（Nm）</th><th>SOC（%）</th></tr></thead><tbody>${rs.slice(0, limit).map(r => `<tr><td>${r.time}</td><td>${fmt(r.traction,2)}</td><td>${fmt(r.torque,1)}</td><td>${fmt(r.soc,1)}</td></tr>`).join("")}</tbody></table></div>`;
+    }
+    function kpi(label, value, unit = "") { return `<div class="kpi"><div class="label">${label}</div><div class="value">${value}<span class="unit">${unit}</span></div></div>`; }
+    function esc(v) { return String(v ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
+    function mean(values) { return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0; }
+    function median(values) {
+      if (!values.length) return 0;
+      const s = values.slice().sort((a, b) => a - b);
+      const m = Math.floor(s.length / 2);
+      return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+    }
+    function std(values) {
+      if (values.length < 2) return 0;
+      const m = mean(values);
+      return Math.sqrt(values.reduce((a, b) => a + (b - m) ** 2, 0) / (values.length - 1));
+    }
+    function quantile(values, q) {
+      const clean = values.filter(Number.isFinite).sort((a, b) => a - b);
+      if (!clean.length) return 0;
+      const pos = (clean.length - 1) * q;
+      const lo = Math.floor(pos), hi = Math.ceil(pos);
+      return clean[lo] + (clean[hi] - clean[lo]) * (pos - lo);
+    }
+    function durationMinutes(items) {
+      const times = items.map(r => Date.parse(String(r.time).replace(" ", "T"))).filter(Number.isFinite);
+      if (times.length < 2) return Math.max(1, items.length / 200 / 60);
+      const span = (Math.max(...times) - Math.min(...times)) / 60000;
+      return Math.max(span, items.length / 200 / 60, 1 / 60);
+    }
+    function inferSampleRate(items) {
+      const times = items.map(r => Date.parse(String(r.time).replace(" ", "T")) / 1000).filter(Number.isFinite);
+      const deltas = [];
+      for (let i = 1; i < times.length; i++) {
+        const d = times[i] - times[i - 1];
+        if (d > 0) deltas.push(d);
+      }
+      if (!deltas.length) return 1;
+      return Math.min(200, Math.max(0.02, 1 / median(deltas)));
+    }
+    function seriesFor(rs, channel) {
+      return rs.map(r => ({ time: r.time, value: num(r[channel]) })).filter(r => r.value !== null);
+    }
+    function threeSigmaClean(values, windowSize) {
+      const half = Math.max(5, Math.floor(windowSize / 2));
+      const cleaned = values.slice();
+      const flags = [];
+      for (let i = 0; i < values.length; i++) {
+        const a = Math.max(0, i - half), b = Math.min(values.length, i + half + 1);
+        const window = values.slice(a, b);
+        const med = median(window), sigma = std(window);
+        if (sigma > 0 && Math.abs(values[i] - med) > 3 * sigma) {
+          cleaned[i] = med;
+          flags.push(i);
+        }
+      }
+      return { values: cleaned, flags };
+    }
+    function biquadLowpass(values, cutoff, fs, q) {
+      const w0 = 2 * Math.PI * cutoff / fs;
+      const cos = Math.cos(w0), alpha = Math.sin(w0) / (2 * q);
+      let b0 = (1 - cos) / 2, b1 = 1 - cos, b2 = (1 - cos) / 2;
+      const a0 = 1 + alpha, a1 = -2 * cos, a2 = 1 - alpha;
+      b0 /= a0; b1 /= a0; b2 /= a0;
+      const aa1 = a1 / a0, aa2 = a2 / a0;
+      let x1 = values[0] || 0, x2 = x1, y1 = x1, y2 = x1;
+      return values.map(x0 => {
+        const y0 = b0 * x0 + b1 * x1 + b2 * x2 - aa1 * y1 - aa2 * y2;
+        x2 = x1; x1 = x0; y2 = y1; y1 = y0;
+        return y0;
+      });
+    }
+    function butterworthZeroPhase(values, cutoff, fs) {
+      if (values.length < 5 || cutoff <= 0 || fs <= 0) return values.slice();
+      const safeCutoff = Math.min(cutoff, fs * 0.45);
+      const qs = [0.5411961, 1.3065630];
+      const cascade = input => qs.reduce((arr, q) => biquadLowpass(arr, safeCutoff, fs, q), input);
+      const forward = cascade(values);
+      return cascade(forward.slice().reverse()).reverse();
+    }
+    function turningPoints(values) {
+      const pts = [];
+      for (let i = 1; i < values.length - 1; i++) {
+        const a = values[i - 1], b = values[i], c = values[i + 1];
+        if ((b >= a && b > c) || (b <= a && b < c)) pts.push(b);
+      }
+      if (values.length) {
+        pts.unshift(values[0]);
+        pts.push(values[values.length - 1]);
+      }
+      return pts;
+    }
+    function rainflowCount(values) {
+      const tp = turningPoints(values);
+      const stack = [], cycles = [];
+      tp.forEach(v => {
+        stack.push(v);
+        while (stack.length >= 3) {
+          const n = stack.length;
+          const x = Math.abs(stack[n - 2] - stack[n - 3]);
+          const y = Math.abs(stack[n - 1] - stack[n - 2]);
+          if (y < x) break;
+          const count = stack.length > 3 ? 1 : 0.5;
+          cycles.push({ range: x, amp: x / 2, mean: (stack[n - 3] + stack[n - 2]) / 2, count });
+          if (stack.length > 3) stack.splice(n - 3, 2);
+          else stack.shift();
+        }
+      });
+      for (let i = 0; i < stack.length - 1; i++) {
+        const r = Math.abs(stack[i + 1] - stack[i]);
+        if (r > 0) cycles.push({ range: r, amp: r / 2, mean: (stack[i + 1] + stack[i]) / 2, count: 0.5 });
+      }
+      return cycles.filter(c => c.amp > 0);
+    }
+    function amplitudeBins(cycles, count = 9) {
+      const amps = cycles.map(c => c.amp).filter(Number.isFinite);
+      const maxAmp = Math.max(quantile(amps, 0.98), Math.max(...amps, 1) * 0.35, 1);
+      const step = maxAmp / count;
+      return Array.from({ length: count }, (_, i) => ({ low: i * step, high: (i + 1) * step, label: `${fmt(i * step, 1)}-${fmt((i + 1) * step, 1)}` }));
+    }
+    function binCycleCounts(cycles, bins, scale = 1) {
+      const counts = bins.map(() => 0);
+      cycles.forEach(c => {
+        let i = bins.findIndex(b => c.amp >= b.low && c.amp < b.high);
+        if (i < 0) i = bins.length - 1;
+        counts[i] += c.count * scale;
+      });
+      return counts;
+    }
+    function gpdSurvival(x, shape, beta) {
+      if (x <= 0) return 1;
+      if (Math.abs(shape) < 1e-6) return Math.exp(-x / beta);
+      const base = 1 + shape * x / beta;
+      return base > 0 ? Math.pow(base, -1 / shape) : 0;
+    }
+    function potExtrapolation(cycles, bins, targetMinutes, observedMinutes) {
+      const amps = cycles.map(c => c.amp).filter(Number.isFinite);
+      const threshold = quantile(amps, 0.9);
+      const scale = Math.max(1, targetMinutes / Math.max(observedMinutes, 1 / 60));
+      const observed = binCycleCounts(cycles, bins, 1);
+      const extrapolated = binCycleCounts(cycles, bins, scale);
+      const exceed = cycles.filter(c => c.amp > threshold);
+      const exceedCount = exceed.reduce((a, c) => a + c.count, 0);
+      const excess = exceed.map(c => c.amp - threshold);
+      const m = mean(excess), v = std(excess) ** 2;
+      let shape = 0, beta = Math.max(m, 1e-6);
+      if (excess.length >= 6 && v > 1e-9) {
+        shape = Math.max(-0.45, Math.min(0.45, 0.5 * (1 - (m * m / v))));
+        beta = Math.max(m * (1 - shape), 1e-6);
+      }
+      if (exceed.length >= 3) {
+        bins.forEach((b, i) => {
+          if (b.high > threshold) {
+            const lo = Math.max(0, b.low - threshold);
+            const hi = Math.max(0, b.high - threshold);
+            extrapolated[i] = exceedCount * scale * Math.max(0, gpdSurvival(lo, shape, beta) - gpdSurvival(hi, shape, beta));
+          }
+        });
+      }
+      return { threshold, scale, shape, beta, observed, extrapolated };
+    }
+    function rainflowMatrix(cycles, ampBins, meanBinsCount = 7) {
+      const means = cycles.map(c => c.mean).filter(Number.isFinite);
+      const minMean = Math.min(...means, 0), maxMean = Math.max(...means, 1);
+      const meanStep = (maxMean - minMean || 1) / meanBinsCount;
+      const meanBins = Array.from({ length: meanBinsCount }, (_, i) => ({ low: minMean + i * meanStep, high: minMean + (i + 1) * meanStep, label: `${fmt(minMean + i * meanStep, 1)}` }));
+      const data = [];
+      let maxCount = 0;
+      cycles.forEach(c => {
+        let xi = ampBins.findIndex(b => c.amp >= b.low && c.amp < b.high);
+        if (xi < 0) xi = ampBins.length - 1;
+        const yi = Math.min(meanBins.length - 1, Math.max(0, Math.floor((c.mean - minMean) / meanStep)));
+        const found = data.find(d => d[0] === xi && d[1] === yi);
+        if (found) found[2] += c.count;
+        else data.push([xi, yi, c.count]);
+      });
+      data.forEach(d => { maxCount = Math.max(maxCount, d[2]); });
+      return { data, maxCount, ampLabels: ampBins.map(b => b.label), meanLabels: meanBins.map(b => b.label) };
+    }
+    function minerDamage(cycles, bins, scale) {
+      const maxAmp = Math.max(...cycles.map(c => c.amp), 1);
+      const ultimate = Math.max(...cycles.map(c => Math.abs(c.mean)), 1) + maxAmp * 3;
+      const m = 5, referenceCycles = 1e7;
+      const byBin = bins.map(() => 0);
+      cycles.forEach(c => {
+        const goodman = c.amp / Math.max(0.2, 1 - Math.abs(c.mean) / ultimate);
+        const nf = referenceCycles * Math.pow(maxAmp / Math.max(goodman, 1e-6), m);
+        const d = c.count * scale / nf;
+        let i = bins.findIndex(b => c.amp >= b.low && c.amp < b.high);
+        if (i < 0) i = bins.length - 1;
+        byBin[i] += d;
+      });
+      return { total: byBin.reduce((a, b) => a + b, 0), byBin };
+    }
+    function fmtSci(v) {
+      v = num(v);
+      return v === null ? "--" : v.toExponential(2);
+    }
+
+    function sidebarHtml(activeKey) {
+      const items = [
+        ["home", "登录界面", "./index.html"],
+        ["online-monitoring", "在线监测", "./online-monitoring.html"],
+        ["historical-tracks", "历史轨迹", "./historical-tracks.html"],
+        ["operation-management", "作业管理", "./operation-management.html"],
+        ["operation-history", "历史作业数据", "./operation-history.html"],
+        ["load-spectrum", "载荷谱编制", "./load-spectrum.html"],
+        ["original", "综合展示", "./overview.html"]
+      ];
+      const links = items.map(([key, label, url]) => `<a class="${key === activeKey ? "active" : ""}" href="${url}">${label}</a>`).join("");
+      return `<aside class="platform-sidebar"><div class="platform-brand"><div class="platform-logo"><img src="./images/cau-engineering-logo.jpg" alt="中国农业大学工学院院徽"></div><span class="platform-brand-name">混合动力拖拉机<br>田间作业载荷数据平台</span></div><nav class="platform-nav">${links}</nav></aside>`;
+    }
+    function renderHome() {
+      document.body.classList.remove("spectrum-locked");
+      $("topTools").style.display = "none";
+      const entries = [
+        ["original", { lang: "zh", title: "综合展示", subtitle: "查看批次、时序曲线、作业轨迹与载荷分布等综合内容。", url: "./overview.html" }],
+        ...Object.entries(pages).map(([key, p]) => [key, { ...p, url: `./${key}.html` }])
+      ];
+      const cards = entries.map(([key, p]) => `<article class="home-card en"><div><h2>${p.title}</h2><p>${p.subtitle}</p></div><a class="open-btn" href="${p.url}">打开</a></article>`).join("");
+      $("app").innerHTML = `<div class="en-shell unified-shell">${sidebarHtml("")}<section class="en-body unified-content"><header class="en-top unified-topbar"><div class="data-title unified-topbar-title">☰ 混合动力拖拉机田间作业载荷数据平台</div><div class="top-label unified-topbar-section">平台首页</div></header><main class="en-main unified-page"><div class="home"><div class="home-head"><div><h1>农机试验数据平台首页</h1><p>山东东营与新疆塔城田间试验数据统一从这里进入。</p></div><a class="open-btn" href="./overview.html">打开综合展示</a></div><div class="home-grid">${cards}</div></div></main></section></div>`;
+    }
+    function renderShell() {
+      document.body.classList.toggle("spectrum-locked", PAGE === "load-spectrum");
+      $("topTools").style.display = "flex";
+      const meta = pages[PAGE];
+      document.documentElement.lang = "zh-CN";
+      document.title = "混合动力拖拉机田间作业载荷数据平台";
+      $("app").innerHTML = `<div class="en-shell unified-shell">${sidebarHtml(PAGE)}<section class="en-body unified-content"><header class="en-top unified-topbar"><div class="data-title unified-topbar-title">☰ 混合动力拖拉机田间作业载荷数据平台</div><div class="top-label unified-topbar-section">${meta.title}</div></header><main class="en-main unified-page"><div class="page-title"><div><h1>${meta.title}</h1><p>${meta.subtitle}</p></div><span class="badge" id="statusBadge">正在加载</span></div><div id="pageBody"></div></main></section></div>`;
+    }
+    function fillSelectors() {
+      $("sourceSelect").innerHTML = sources.map(s => `<option value="${s.key}" ${s.key === currentSource ? "selected" : ""}>${s.label}</option>`).join("");
+      $("batchSelect").innerHTML = batches.map(b => `<option value="${b.id}">[${b.brand}/${b.task_type || "-"}] ${b.batch_name}</option>`).join("");
+      $("sourceSelect").onchange = () => { currentSource = $("sourceSelect").value; loadBatches(); };
+      $("batchSelect").onchange = () => loadCurrentBatch();
+    }
+    async function boot() {
+      if (PAGE === "home" || !pages[PAGE]) { renderHome(); return; }
+      renderShell();
+      const payload = await apiFetch("/api/sources", { requestKey: "sources" });
+      sources = payload.sources || [];
+      sources.forEach(s => { centers[s.key] = s.default_center; });
+      currentSource = payload.default || "xinjiang";
+      await loadBatches();
+    }
+    async function loadBatches() {
+      $("statusBadge").textContent = "正在加载批次";
+      batches = await apiFetch(`/api/batches?source=${encodeURIComponent(currentSource)}`, { requestKey: "batches" });
+      if (batches.error) throw new Error(batches.error);
+      fillSelectors();
+      if (batches.length) { await loadCurrentBatch(); } else {
+        $("statusBadge").textContent = "暂无数据";
+        $("pageBody").innerHTML = `<section class="card"><div class="card-body"><p>当前数据源暂无可用批次。</p></div></section>`;
+      }
+    }
+    async function loadCurrentBatch() {
+      const id = $("batchSelect").value || batches[0]?.id;
+      if (!id) return;
+      $("statusBadge").textContent = "正在加载数据";
+      const data = await apiFetch(`/api/batch_data/${encodeURIComponent(id)}?source=${encodeURIComponent(currentSource)}`, { requestKey: "batch-data" });
+      if (data.error) throw new Error(data.error);
+      const batch = batches.find(b => String(b.id) === String(id)) || batches[0];
+      clearVisuals();
+      renderPage(data, batch);
+      $("statusBadge").textContent = "数据已就绪";
+    }
+    function renderPage(data, batch) {
+      if (PAGE === "field-test") renderFieldOverview(data, batch);
+      if (PAGE === "test-data") renderDataAnalysis(data, batch);
+      if (PAGE === "online-monitoring") renderOnline(data, batch);
+      if (PAGE === "historical-tracks") renderTracks(data, batch);
+      if (PAGE === "operation-management") renderOperation(data, batch);
+      if (PAGE === "operation-history") renderHistory(data, batch);
+      if (PAGE === "load-spectrum") renderLoadSpectrum(data, batch);
+    }
+    function renderFieldOverview(data, batch) {
+      const pts = points(data), rs = rows(data), tr = stats(rs.map(r => r.traction));
+      const taskCounts = {};
+      batches.forEach(b => taskCounts[b.task_type || "未分类"] = (taskCounts[b.task_type || "未分类"] || 0) + 1);
+      $("pageBody").innerHTML = `<div class="grid two"><section class="card"><div class="card-head"><span>试验区域与当前批次轨迹</span><span>${sources.find(s => s.key === currentSource)?.label || currentSource}</span></div><div id="overviewMap" class="map-box"></div></section><aside class="grid"><section class="card"><div class="card-head"><span>数据源概况</span></div><div class="card-body source-card"><div class="source-row"><span>批次数</span><strong>${batches.length}</strong></div><div class="source-row"><span>当前作业类型</span><strong>${batch.task_type || "-"}</strong></div><div class="source-row"><span>当前样本点</span><strong>${data.total_count || rs.length}</strong></div><div class="source-row"><span>轨迹点</span><strong>${pts.length}</strong></div><div class="source-row"><span>最大牵引力</span><strong>${fmt(tr.max,2)} kN</strong></div></div></section><section class="card"><div class="card-head"><span>作业类型分布</span></div><div class="card-body"><div id="taskBar" class="chart sm"></div></div></section></aside></div>`;
+      setTimeout(() => drawTrackMap("overviewMap", pts, { line: "#2fae6b", point: "#176bd6", fitMaxZoom: 15.5, padding: [70, 70] }), 0);
+      setTimeout(() => barChart("taskBar", Object.keys(taskCounts), Object.values(taskCounts)), 0);
+    }
+    function renderDataAnalysis(data, batch) {
+      const rs = rows(data), pts = points(data), time = rs.map(r => r.time.split(" ").pop());
+      const traction = rs.map(r => r.traction), torque = rs.map(r => r.torque), soc = rs.map(r => r.soc);
+      const tr = stats(traction), tq = stats(torque), sc = stats(soc);
+      $("pageBody").innerHTML = `<div class="grid four">${kpi("样本点数", data.total_count || rs.length, "点")}${kpi("最大牵引力", fmt(tr.max,2), "kN")}${kpi("最大PTO转矩", fmt(tq.max,1), "Nm")}${kpi("最高SOC", fmt(sc.max,1), "%")}</div><div class="grid two" style="margin-top:16px;"><section class="card"><div class="card-head"><span>载荷与转矩时序</span></div><div class="card-body"><div id="mainSeries" class="chart"></div></div></section><section class="card"><div class="card-head"><span>作业轨迹</span></div><div id="dataMap" class="map-box"></div></section></div><div class="grid three" style="margin-top:16px;"><section class="card"><div class="card-head"><span>载荷等级占比</span></div><div class="card-body"><div id="loadPie" class="chart sm"></div></div></section><section class="card"><div class="card-head"><span>SOC趋势</span></div><div class="card-body"><div id="socLine" class="chart sm"></div></div></section><section class="card"><div class="card-head"><span>样本表</span></div><div class="card-body">${sampleTable(rs, 8)}</div></section></div>`;
+      lineChart("mainSeries", time, [{ name: "牵引力", data: traction }, { name: "转矩", data: torque, axis: 1 }]);
+      setTimeout(() => drawTrackMap("dataMap", pts, { line: "#16b8bd", point: "#2fae6b", fitMaxZoom: 16, padding: [80, 80] }), 0);
+      pieChart("loadPie", traction);
+      lineChart("socLine", time, [{ name: "SOC", data: soc }]);
+    }
+    function renderOnline(data, batch) {
+      const rs = rows(data), pts = points(data), last = rs[rs.length - 1] || {}, lastPt = pts[pts.length - 1] || [center()[0], center()[1], 0];
+      const tr = stats(rs.map(r => r.traction)), tq = stats(rs.map(r => r.torque)), sc = stats(rs.map(r => r.soc));
+      $("pageBody").innerHTML = `<div class="grid four">${kpi("批次总数", batches.length, "")}${kpi("在线农机", 1, "台")}${kpi("采样记录", data.total_count || rs.length, "条")}${kpi("GPS点数", pts.length, "点")}</div><div class="grid two" style="margin-top:16px;"><section class="card"><div class="card-head"><span>定位信息</span></div><div class="card-body"><div class="status-list"><div class="status-item"><span>定位时间</span><strong>${last.time || "-"}</strong></div><div class="status-item"><span>经度</span><strong>${fmt(lastPt[1],6)}</strong></div><div class="status-item"><span>纬度</span><strong>${fmt(lastPt[0],6)}</strong></div><div class="status-item"><span>定位状态</span><strong>已定位</strong></div></div></div></section><section class="card"><div class="card-head"><span>作业工况</span></div><div class="card-body"><div class="status-list"><div class="status-item"><span>牵引力范围</span><strong>${fmt(tr.min,2)} - ${fmt(tr.max,2)} kN</strong></div><div class="status-item"><span>PTO转矩范围</span><strong>${fmt(tq.min,1)} - ${fmt(tq.max,1)} Nm</strong></div><div class="status-item"><span>SOC范围</span><strong>${fmt(sc.min,1)} - ${fmt(sc.max,1)} %</strong></div><div class="status-item"><span>作业类型</span><strong>${batch.task_type || "-"}</strong></div></div></div></section></div><div class="grid two" style="margin-top:16px;"><section class="card"><div class="card-head"><span>农机查询</span></div><div class="card-body"><div class="filters"><label>农机编号<input value="${batch.brand || ""}"></label><label>作业类型<select><option>${batch.task_type || "-"}</option></select></label><label>数据源<select><option>${sources.find(s => s.key === currentSource)?.label || currentSource}</option></select></label><label>批次名称<input value="${batch.batch_name || ""}"></label></div><button class="button" style="margin-top:14px;">查询</button></div></section><section class="card"><div class="card-head"><span>最近批次</span></div><div class="card-body route-list">${batches.slice(0, 9).map(b => `<div class="route-item"><strong>${b.brand}</strong><span class="muted">${b.batch_name}</span></div>`).join("")}</div></section></div>`;
+    }
+    function renderTracks(data, batch) {
+      const pts = points(data), rs = rows(data);
+      $("pageBody").innerHTML = `<div class="grid three">${kpi("历史路线", batches.length, "条")}${kpi("当前轨迹点", pts.length, "点")}${kpi("当前记录", data.total_count || rs.length, "条")}</div><div class="grid two" style="margin-top:16px; grid-template-columns: 1fr 340px;"><section class="card"><div class="card-head"><span>轨迹地图</span><span>${batch.batch_name}</span></div><div id="trackMap" class="map-box" style="height:620px;"></div></section><aside class="card"><div class="card-head"><span>历史轨迹查询</span></div><div class="card-body"><div class="filters"><label>开始日期<input value="${(rs[0]?.time || "").split(" ")[0]}"></label><label>结束日期<input value="${(rs[rs.length-1]?.time || "").split(" ")[0]}"></label><label>作业类型<select><option>${batch.task_type || "-"}</option></select></label><label>数据源<select><option>${sources.find(s => s.key === currentSource)?.label || currentSource}</option></select></label></div><button class="button" style="margin:14px 0;">查询</button><div class="route-list">${batches.map(b => `<div class="route-item"><strong>${b.batch_name}</strong><span class="muted">${b.brand} / ${b.task_type || "-"}</span></div>`).join("")}</div></div></aside></div>`;
+      setTimeout(() => drawTrackMap("trackMap", pts, { line: "#ef4444", point: "#ef4444", fitMaxZoom: 15.5, padding: [75, 75] }), 0);
+    }
+    function renderOperation(data, batch) {
+      const rs = rows(data), pts = points(data), time = rs.map(r => r.time.split(" ").pop());
+      const traction = rs.map(r => r.traction), torque = rs.map(r => r.torque), soc = rs.map(r => r.soc);
+      const active = rs.filter(r => Math.abs(r.traction) > 0.5).length;
+      const tr = stats(traction);
+      $("pageBody").innerHTML = `<div class="grid four">${kpi("作业记录", data.total_count || rs.length, "条")}${kpi("有效载荷记录", active, "条")}${kpi("平均牵引力", fmt(tr.avg,2), "kN")}${kpi("轨迹点", pts.length, "点")}</div><div class="grid two" style="margin-top:16px;"><section class="card"><div class="card-head"><span>作业区域点位</span></div><div id="operationMap" class="map-box"></div></section><section class="card"><div class="card-head"><span>作业工况数据</span></div><div class="card-body"><div id="operationChart" class="chart"></div></div></section></div><div class="grid two" style="margin-top:16px;"><section class="card"><div class="card-head"><span>载荷分布</span></div><div class="card-body"><div id="operationPie" class="chart sm"></div></div></section><section class="card"><div class="card-head"><span>作业样本表</span></div><div class="card-body">${sampleTable(rs, 10)}</div></section></div>`;
+      setTimeout(() => drawTrackMap("operationMap", pts, { line: "#2fae6b", point: "#2fae6b", fitMaxZoom: 15.5, padding: [70, 70] }), 0);
+      lineChart("operationChart", time, [{ name: "牵引力", data: traction }, { name: "转矩", data: torque, axis: 1 }, { name: "SOC", data: soc }]);
+      pieChart("operationPie", traction);
+    }
+    function renderHistory(data, batch) {
+      const rs = rows(data), time = rs.map(r => r.time.split(" ").pop()), traction = rs.map(r => r.traction), torque = rs.map(r => r.torque), soc = rs.map(r => r.soc);
+      $("pageBody").innerHTML = `<div class="grid two" style="grid-template-columns: 1fr 260px;"><section class="card"><div class="card-head"><span>历史作业工况数据</span><span>${batch.task_type || "-"}</span></div><div class="card-body">${sampleTable(rs, 14)}</div></section><aside class="card"><div class="card-head"><span>查询条件</span></div><div class="card-body"><div class="filters" style="grid-template-columns:1fr;"><label>参数<select id="paramSelect"><option value="traction">牵引力</option><option value="torque">转矩</option><option value="soc">SOC</option></select></label><label>批次<input value="${batch.batch_name}"></label><label>数据源<input value="${sources.find(s => s.key === currentSource)?.label || currentSource}"></label></div></div></aside></div><div class="card" style="margin-top:16px;"><div class="card-head"><span>参数趋势</span></div><div class="card-body"><div id="historyChart" class="chart"></div></div></div>`;
+      const draw = () => {
+        const p = $("paramSelect").value;
+        const dataMap = { traction, torque, soc };
+        charts.forEach(c => c.dispose()); charts = [];
+        const labels = { traction: "牵引力", torque: "转矩", soc: "SOC" };
+        lineChart("historyChart", time, [{ name: labels[p], data: dataMap[p] }]);
+      };
+      $("paramSelect").onchange = draw;
+      draw();
+    }
+    function renderLoadSpectrum(data, batch) {
+      $("pageBody").innerHTML = `<div class="spectrum-dashboard"><section class="card spectrum-control-card"><div class="card-head"><span>算法参数与关键结果</span><span>${esc(batch.batch_name)}</span></div><div class="card-body"><div class="algo-controls spectrum-controls"><label>分析通道<select id="spectrumChannel"><option value="traction">牵引力</option><option value="torque">PTO转矩</option></select></label><label>3σ窗口点数<input id="sigmaWindow" type="number" value="256" min="31" step="1"></label><label>低通截止频率(Hz)<input id="cutoffHz" type="number" value="5" min="0.01" step="0.1"></label><label>等效外推时长(h)<input id="lifeHours" type="number" value="2" min="0.1" step="0.1"></label><label>执行<button class="button" id="runSpectrum" type="button">重新计算</button></label></div><div id="spectrumKpis" class="spectrum-kpis"></div></div></section><div class="spectrum-row top"><section class="card"><div class="card-head"><span>原始载荷时序</span><span id="rawMeta" class="figure-note"></span></div><div class="card-body"><div id="rawSeries" class="chart"></div></div></section><section class="card"><div class="card-head"><span>总处理输出</span><span id="summaryMeta" class="figure-note"></span></div><div class="card-body"><div id="summaryGraph" class="chart"></div></div></section></div><div class="spectrum-row mid"><section class="card"><div class="card-head"><span>3σ异常值剔除结果</span><span id="sigmaMeta" class="figure-note"></span></div><div class="card-body"><div id="sigmaSeries" class="chart"></div></div></section><section class="card"><div class="card-head"><span>巴特沃斯低通滤波结果</span><span id="filterMeta" class="figure-note"></span></div><div class="card-body"><div id="filterSeries" class="chart"></div></div></section></div><div class="spectrum-row bottom"><section class="card"><div class="card-head"><span>雨流均值-幅值统计</span><span id="rainMeta" class="figure-note">二维雨流域点云与三维矩阵同图展示</span></div><div class="card-body"><div class="spectrum-rain-grid"><div id="rainflowScatter2d" class="chart"></div><div id="rainflowMatrix3d" class="chart"></div></div></div></section><section class="card"><div class="card-head"><span>POT外推载荷谱</span><span id="potMeta" class="figure-note"></span></div><div class="card-body"><div id="potBars" class="chart"></div></div></section></div></div>`;
+      const redraw = () => {
+        charts.forEach(c => c.dispose());
+        charts = [];
+        drawLoadSpectrum(data, batch);
+      };
+      $("spectrumChannel").onchange = () => {
+        $("cutoffHz").value = $("spectrumChannel").value === "torque" ? 20 : 5;
+        redraw();
+      };
+      ["sigmaWindow", "cutoffHz", "lifeHours"].forEach(id => { $(id).onchange = redraw; });
+      $("runSpectrum").onclick = redraw;
+      drawLoadSpectrum(data, batch);
+    }
+    function drawLoadSpectrum(data, batch) {
+      const channel = $("spectrumChannel").value;
+      const labels = { traction: "牵引力", torque: "PTO转矩" };
+      const units = { traction: "kN", torque: "Nm" };
+      const items = seriesFor(rows(data), channel);
+      if (items.length < 8) {
+        $("spectrumKpis").innerHTML = kpi("可用样本", items.length, "点");
+        return;
+      }
+      const raw = items.map(r => r.value);
+      const time = items.map(r => String(r.time).split(" ").pop());
+      const windowSize = Math.max(31, Math.min(501, Number($("sigmaWindow").value) || 256));
+      const fs = inferSampleRate(items);
+      const targetCutoff = Math.max(0.01, Number($("cutoffHz").value) || 5);
+      const effectiveCutoff = Math.min(targetCutoff, fs * 0.45);
+      const cleaned = threeSigmaClean(raw, windowSize);
+      const filtered = butterworthZeroPhase(cleaned.values, effectiveCutoff, fs);
+      const cycles = rainflowCount(filtered);
+      const bins = amplitudeBins(cycles, 9);
+      const observedMinutes = durationMinutes(items);
+      const targetMinutes = Math.max(1, Number($("lifeHours").value) * 60 || 120);
+      const pot = potExtrapolation(cycles, bins, targetMinutes, observedMinutes);
+      const damage = minerDamage(cycles, bins, pot.scale);
+      const cycleCount = cycles.reduce((a, c) => a + c.count, 0);
+      $("spectrumKpis").innerHTML = `${kpi("原始样本", data.total_count || raw.length, "点")}${kpi("3σ替换点", cleaned.flags.length, "点")}${kpi("雨流循环", fmt(cycleCount,1), "次")}${kpi("等效外推", fmt(targetMinutes / 60, 1), "h")}`;
+      $("rawMeta").textContent = `${labels[channel]} / ${units[channel]}`;
+      $("sigmaMeta").textContent = `窗口 ${windowSize} 点 / 替换 ${cleaned.flags.length} 点`;
+      $("filterMeta").textContent = `${labels[channel]} / ${fmt(effectiveCutoff, 2)} Hz`;
+      $("potMeta").textContent = `阈值 ${fmt(pot.threshold, 2)} ${units[channel]} / ×${fmt(pot.scale, 1)}`;
+      $("rainMeta").textContent = `循环 ${fmt(cycleCount, 1)} 次 / 二维雨流域 ${cycles.length} 点 / 幅值 ${bins.length} 级`;
+      $("summaryMeta").textContent = `累计损伤指数 ${fmtSci(damage.total)}`;
+
+      chart("rawSeries").setOption({
+        tooltip: { trigger: "axis" },
+        grid: { top: 24, right: 28, bottom: 36, left: 52 },
+        xAxis: { type: "category", data: time, axisLabel: { fontSize: 10 } },
+        yAxis: { type: "value", name: units[channel], scale: true },
+        dataZoom: [{ type: "inside" }],
+        series: [{ name: "原始载荷", type: "line", data: raw, showSymbol: false, lineStyle: { color: "#176bd6", width: 1.6 } }]
+      });
+
+      const labelsX = bins.map(b => b.label);
+      chart("sigmaSeries").setOption({
+        tooltip: { trigger: "axis" },
+        legend: { top: 0 },
+        grid: { top: 42, right: 28, bottom: 36, left: 52 },
+        xAxis: { type: "category", data: time, axisLabel: { fontSize: 10 } },
+        yAxis: { type: "value", name: units[channel], scale: true },
+        dataZoom: [{ type: "inside" }],
+        series: [
+          { name: "原始", type: "line", data: raw, showSymbol: false, lineStyle: { color: "#94a3b8", width: 1 } },
+          { name: "3σ清洗", type: "line", data: cleaned.values, showSymbol: false, lineStyle: { color: "#2fae6b", width: 1.5 } },
+          { name: "异常点", type: "scatter", data: cleaned.flags.map(i => [time[i], raw[i]]), symbolSize: 7, itemStyle: { color: "#ef4444" } }
+        ]
+      });
+
+      chart("filterSeries").setOption({
+        tooltip: { trigger: "axis" },
+        legend: { top: 0 },
+        grid: { top: 42, right: 28, bottom: 36, left: 52 },
+        xAxis: { type: "category", data: time, axisLabel: { fontSize: 10 } },
+        yAxis: { type: "value", name: units[channel], scale: true },
+        dataZoom: [{ type: "inside" }],
+        series: [
+          { name: "3σ清洗", type: "line", data: cleaned.values, showSymbol: false, lineStyle: { color: "#94a3b8", width: 1 } },
+          { name: "低通滤波", type: "line", data: filtered, showSymbol: false, lineStyle: { color: "#f59e0b", width: 1.8 } }
+        ]
+      });
+
+      const matrix = rainflowMatrix(cycles, bins, 7);
+      const validCycles = cycles.filter(c => Number.isFinite(c.amp) && Number.isFinite(c.mean));
+      const scatterAmpMax = Math.max(...validCycles.map(c => c.amp), 1);
+      const scatterMeanMin = Math.min(...validCycles.map(c => c.mean), 0);
+      const scatterMeanMax = Math.max(...validCycles.map(c => c.mean), 1);
+      const ampBucketCount = 52, meanBucketCount = 42;
+      const ampStep = scatterAmpMax / ampBucketCount || 1;
+      const meanSpan = scatterMeanMax - scatterMeanMin || 1;
+      const meanStep = meanSpan / meanBucketCount || 1;
+      const density = new Map();
+      const densityKey = c => {
+        const xi = Math.min(ampBucketCount - 1, Math.max(0, Math.floor(c.amp / ampStep)));
+        const yi = Math.min(meanBucketCount - 1, Math.max(0, Math.floor((c.mean - scatterMeanMin) / meanStep)));
+        return `${xi}:${yi}`;
+      };
+      validCycles.forEach(c => {
+        const key = densityKey(c);
+        density.set(key, (density.get(key) || 0) + c.count);
+      });
+      const rainScatter = validCycles.map(c => [Number(c.amp.toFixed(3)), Number(c.mean.toFixed(3)), density.get(densityKey(c)) || c.count, c.count]);
+      const maxDensity = Math.max(...rainScatter.map(d => d[2]), 1);
+      const meanPad = Math.max(meanSpan * 0.08, scatterAmpMax * 0.02, 1e-3);
+      const scatterAmpAxisMax = Math.ceil(scatterAmpMax * 1.08 * 10) / 10;
+      const scatterMeanAxisMin = Math.floor((scatterMeanMin - meanPad) * 10) / 10;
+      const scatterMeanAxisMax = Math.ceil((scatterMeanMax + meanPad) * 10) / 10;
+      chart("rainflowScatter2d").setOption({
+        tooltip: {
+          formatter: p => `幅值：${fmt(p.value[0], 2)} ${units[channel]}<br>均值：${fmt(p.value[1], 2)} ${units[channel]}<br>局部循环次数：${fmt(p.value[2], 1)}<br>循环计数：${fmt(p.value[3], 1)}`
+        },
+        grid: { top: 18, right: 78, bottom: 34, left: 48 },
+        xAxis: { type: "value", name: "幅值", min: 0, max: scatterAmpAxisMax, nameGap: 18, axisLabel: { formatter: v => fmt(v, 0) }, splitLine: { lineStyle: { color: "#edf2f7" } } },
+        yAxis: { type: "value", name: "均值", min: scatterMeanAxisMin, max: scatterMeanAxisMax, nameGap: 24, axisLabel: { formatter: v => fmt(v, 0) }, splitLine: { lineStyle: { color: "#edf2f7" } } },
+        visualMap: { type: "continuous", min: 0, max: maxDensity, dimension: 2, calculable: true, right: 4, top: 18, itemHeight: 120, text: ["高", "低"], inRange: { color: ["#241052", "#3650a3", "#208f9b", "#86d549", "#fde047"] } },
+        series: [{
+          name: "雨流域",
+          type: "scatter",
+          data: rainScatter,
+          symbolSize: v => Math.max(3, Math.min(15, 3 + Math.sqrt(v[2]) * 2.4)),
+          itemStyle: { opacity: 0.72, borderColor: "rgba(255,255,255,.28)", borderWidth: 0.5 },
+          emphasis: { focus: "series" }
+        }]
+      });
+
+      chart("rainflowMatrix3d").setOption({
+        tooltip: {},
+        visualMap: { max: Math.max(matrix.maxCount, 1), inRange: { color: ["#dbeafe", "#60a5fa", "#1d4ed8"] }, show: false },
+        xAxis3D: { type: "category", name: "幅值", nameGap: 28, data: matrix.ampLabels, nameTextStyle: { fontSize: 11 }, axisLabel: { interval: 1, margin: 10, fontSize: 9 } },
+        yAxis3D: { type: "category", name: "均值", nameGap: 30, data: matrix.meanLabels, nameTextStyle: { fontSize: 11 }, axisLabel: { interval: 1, margin: 10, fontSize: 9 } },
+        zAxis3D: { type: "value", name: "次数", nameGap: 24, nameTextStyle: { fontSize: 11 }, axisLabel: { margin: 8, fontSize: 9 } },
+        grid3D: { boxWidth: 112, boxDepth: 64, boxHeight: 68, top: -8, bottom: 2, left: -6, right: 8, viewControl: { projection: "orthographic", alpha: 22, beta: 34, distance: 150 }, light: { main: { intensity: 1.2 } } },
+        series: [{ type: "bar3D", data: matrix.data, bevelSize: 0.15, shading: "lambert" }]
+      });
+
+      chart("potBars").setOption({
+        tooltip: { trigger: "axis" },
+        legend: { top: 0 },
+        grid: { top: 42, right: 18, bottom: 42, left: 54 },
+        xAxis: { type: "category", data: labelsX, axisLabel: { rotate: 24, fontSize: 10 } },
+        yAxis: { type: "value", name: "循环次数" },
+        series: [
+          { name: "雨流统计", type: "bar", data: pot.observed, itemStyle: { color: "#176bd6" } },
+          { name: "POT等效谱", type: "bar", data: pot.extrapolated, itemStyle: { color: "#16b8bd" } }
+        ]
+      });
+
+      const summaryNodes = [
+        `采集数据\n${data.total_count || raw.length}点`,
+        `3σ清洗\n替换${cleaned.flags.length}点`,
+        `低通滤波\n${fmt(effectiveCutoff,2)}Hz`,
+        `雨流计数\n${fmt(cycleCount,1)}次`,
+        `POT外推\n×${fmt(pot.scale,1)}`,
+        "处理输出\n时序/循环/载荷谱/台架谱"
+      ];
+      chart("summaryGraph").setOption({
+        tooltip: { trigger: "item" },
+        series: [{
+          type: "sankey",
+          left: 4,
+          right: 14,
+          top: 8,
+          bottom: 8,
+          nodeWidth: 12,
+          nodeGap: 8,
+          draggable: false,
+          label: { color: "#172033", fontSize: 11, fontWeight: 700, lineHeight: 15 },
+          itemStyle: { borderColor: "#176bd6", borderWidth: 1.5 },
+          lineStyle: { color: "gradient", opacity: 0.38, curveness: 0.45 },
+          data: summaryNodes.map((name, i) => ({ name, itemStyle: { color: i === summaryNodes.length - 1 ? "#2fae6b" : "#dbeafe" } })),
+          links: summaryNodes.slice(0, -1).map((name, i) => ({ source: name, target: summaryNodes[i + 1], value: 1 }))
+        }]
+      });
+    }
+    window.addEventListener("resize", () => charts.forEach(c => c.resize()));
+    boot().catch(err => {
+      if (PAGE !== "home" && pages[PAGE]) renderShell();
+      const target = $("pageBody") || $("app");
+      target.innerHTML = `<section class="card"><div class="card-body"><h2>数据加载失败</h2><p>${err.message}</p><button class="open-btn" type="button" onclick="window.location.reload()">重新加载</button></div></section>`;
+      const badge = $("statusBadge");
+      if (badge) badge.textContent = "加载失败";
+    });
+  </script>
+</body>
+</html>
+
+
+
+
